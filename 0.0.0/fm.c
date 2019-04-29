@@ -83,9 +83,9 @@ int main()
 			        reload_panel(pp[fl_p]->panel, pp[fl_p]->list);
 			        
 			        /* ---- --- --- */
-			            move(y2-1, 0);
+			        move(y-1, 0);
 				    clrtoeol();
-				    mvprintw(y2-1, 0, "%s", realpath(p_buff, NULL));
+				    mvprintw(y-1, 0, "%s", realpath(p_buff, NULL));
 				    refresh();
 				}
                 break;
