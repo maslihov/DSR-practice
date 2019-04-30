@@ -10,7 +10,7 @@ struct fm {
 
 int main()
 {
-    //setlocale(LC_CTYPE, "");
+    setlocale(LC_CTYPE, "");
 
     struct fm p_l, p_r;
     struct fm *pp[] = {&p_l, &p_r};

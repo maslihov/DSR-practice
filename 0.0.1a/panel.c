@@ -31,7 +31,8 @@ void load_menu(F_PANEL *panel, D_LIST *list)
     int i, y, x, c_items;
     getmaxyx(panel->m_win, y, x);
     
-    x = x > ITEM_STR_LEN ? ITEM_STR_LEN - 10 : x - 15;
+    x = (x > ITEM_STR_LEN ? ITEM_STR_LEN - 10 : x - 15) - \
+        TIME_STR_LEN;
     
     panel->c_items = c_items = list->len;
     
@@ -50,14 +51,17 @@ void load_menu(F_PANEL *panel, D_LIST *list)
             (int64_t)fentry->st.st_size, "", HN_AUTOSCALE, \
             HN_B | HN_NOSPACE | HN_DECIMAL);
         
+        char t_buf[TIME_STR_LEN];
+        struct tm *tm;
+        tm = localtime(&fentry->st.st_mtime);
+        strftime(t_buf, sizeof(t_buf), "%d.%m.%y %H:%M", tm);
         
         if(fentry->fl_dir == 1){
-            
             panel->items[i] = new_item("/", fentry->name);
             continue;
         }
-        (void)sprintf(i_name, "%-*.20s [%+5.5s ]", x,\
-            fentry->name, buf_size);
+        (void)sprintf(i_name, "%-*.20s [%+5.5s ] %s", x,\
+            fentry->name, buf_size, t_buf);
         
         
         panel->items[i] = new_item(" ", i_name);
