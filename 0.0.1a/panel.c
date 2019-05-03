@@ -1,6 +1,5 @@
 #include "panel.h"
-#include "dirc.h"
-#include "humanize.h"
+
 
 F_PANEL *init_panel(D_LIST *list, int sy, int sx)
 {
