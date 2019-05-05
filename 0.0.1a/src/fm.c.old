@@ -1,4 +1,12 @@
-#include "fm.h"
+#include <limits.h>
+#include "panel.h"
+
+
+struct fm {
+    F_PANEL *panel;
+    D_LIST *list;
+    char *path;
+};
 
 int main()
 {
@@ -6,19 +14,8 @@ int main()
 
     struct fm p_l, p_r;
     struct fm *pp[] = {&p_l, &p_r};
-    int y, y2, x, x2, fl_p, stop, i;
+    int y, y2, x, x2, fl_p;
     PANEL *top_p;
-
-
-    int event_count;
-    struct epoll_event event, events[MAX_EVENTS];
-    int epoll_fd = epoll_create1(0);
-    
-    event.events = EPOLLIN | EPOLLPRI;
-    event.data.fd = 0;
-    epoll_ctl(epoll_fd, EPOLL_CTL_ADD, 0, &event);
-    stop = 1;
-
     
     p_l.path = realpath (".", NULL);
     p_r.path = realpath (".", NULL);
@@ -26,8 +23,6 @@ int main()
     p_l.list = load_list(p_l.path);
     p_r.list = load_list(p_r.path);
 
-    
-    
     
     initscr();
     cbreak();
@@ -46,17 +41,8 @@ int main()
     fl_p = 1;
     keypad(pp[fl_p]->panel->m_win, TRUE);
     
-    int32_t c = 0;
-    while(stop){
-        event_count = epoll_wait(epoll_fd, events, MAX_EVENTS, EV_TIMEOUT);
-        for(i = 0; i < event_count; i++){
-            if(events[i].data.fd == 0){ 
-                
-                
-            }
-        }
-        
-        c = wgetch(pp[fl_p]->panel->m_win);
+    int32_t c;
+    while((c = wgetch(pp[fl_p]->panel->m_win)) != KEY_F(10)){
         switch(c)
         {
             case '\t': 
@@ -103,14 +89,7 @@ int main()
                 }
                 break;
             } 
-            case KEY_F(10):
-            {
-                stop = 0;
-
-            }
         }
-
-        
         
         update_panels();
         doupdate();
@@ -136,9 +115,6 @@ int main()
 
 
     endwin();
-
-    close(epoll_fd);
-
     dest_panel(p_l.panel);
     dest_panel(p_r.panel);
 

@@ -5,6 +5,7 @@ LIBS = -lmenu -lpanel -lncurses
 EXE = fm
 SRCPATH = ./src/*.c
 
-fm: $(SRCPATH)
+$(EXE): $(SRCPATH) ./src/*.h
 	$(CC) $(CFLAG) $(LIBS) $(SRCPATH) -o $@
+	ls -lh $@
 	
