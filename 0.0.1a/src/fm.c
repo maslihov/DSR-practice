@@ -6,10 +6,10 @@ int main()
 
     struct fm p_l, p_r;
     struct fm *pp[] = {&p_l, &p_r};
-    int y, y2, x, x2, fl_p, stop, i;
+    int y, y2, x, x2, fl_p, i, stop;
+    int get_item[] = {0, 0};
     PANEL *top_p;
-
-
+    
     int event_count;
     struct epoll_event event, events[MAX_EVENTS];
     int epoll_fd = epoll_create1(0);
@@ -18,7 +18,7 @@ int main()
     event.data.fd = 0;
     epoll_ctl(epoll_fd, EPOLL_CTL_ADD, 0, &event);
     stop = 1;
-
+    
     
     p_l.path = realpath (".", NULL);
     p_r.path = realpath (".", NULL);
@@ -27,10 +27,9 @@ int main()
     p_r.list = load_list(p_r.path);
 
     
-    
-    
     initscr();
-    cbreak();
+    
+    timeout(0);
     noecho();
     keypad(stdscr, TRUE);
 
@@ -46,16 +45,16 @@ int main()
     fl_p = 1;
     keypad(pp[fl_p]->panel->m_win, TRUE);
     
-    int32_t c = 0;
+    int32_t c;
     while(stop){
         event_count = epoll_wait(epoll_fd, events, MAX_EVENTS, EV_TIMEOUT);
         for(i = 0; i < event_count; i++){
             if(events[i].data.fd == 0){ 
-                
-                
+                    
+                    
             }
         }
-        
+           
         c = wgetch(pp[fl_p]->panel->m_win);
         switch(c)
         {
@@ -68,9 +67,13 @@ int main()
                 break;
             case KEY_DOWN:
                 menu_driver(pp[fl_p]->panel->menu, REQ_DOWN_ITEM);
+                get_item[fl_p] = item_index(\
+                    current_item(pp[fl_p]->panel->menu));
                 break;
             case KEY_UP:
                 menu_driver(pp[fl_p]->panel->menu, REQ_UP_ITEM);
+                get_item[fl_p] = item_index(\
+                    current_item(pp[fl_p]->panel->menu));
                 break;
             case 10:    // Enter 
             {
@@ -79,7 +82,7 @@ int main()
                 int it;
                 it = item_index(current_item(pp[fl_p]->panel->menu));
                 
-                F_LIST *fentry = &pp[fl_p]->list->list[it];
+                item_dir_list *fentry = &pp[fl_p]->list->list[it];
                 char p_buff[PATH_MAX];
                 
                 if(fentry->fl_dir){
@@ -100,17 +103,16 @@ int main()
                     clrtoeol();
                     mvprintw(y-1, 0, "%s", realpath(p_buff, NULL));
                     refresh();
+                    break;
                 }
-                break;
+                
+                case KEY_F(10):
+                {
+                    stop = 0;
+                    break;
+                }
             } 
-            case KEY_F(10):
-            {
-                stop = 0;
-
-            }
         }
-
-        
         
         update_panels();
         doupdate();
@@ -126,7 +128,11 @@ int main()
             p_l.panel = init_panel(p_l.list, 2, 0);
             p_r.panel = init_panel(p_r.list, 2, x/2);
             
+            refresh();
             keypad(pp[fl_p]->panel->m_win, TRUE);
+            
+            goto_item(p_l.panel->menu, get_item[0]);
+            goto_item(p_r.panel->menu, get_item[1]);   
         }
     }
     
@@ -136,11 +142,12 @@ int main()
 
 
     endwin();
-
+    
     close(epoll_fd);
-
     dest_panel(p_l.panel);
     dest_panel(p_r.panel);
+
+    
 
     free_list(p_l.list);
     free_list(p_r.list);

@@ -1,10 +1,10 @@
 #include <limits.h>
-#include "panel.h"
+#include "fm.h"
 
 
 struct fm {
-    F_PANEL *panel;
-    D_LIST *list;
+    fm_panel *panel;
+    dir_list *list;
     char *path;
 };
 
@@ -65,7 +65,7 @@ int main()
                 int it;
                 it = item_index(current_item(pp[fl_p]->panel->menu));
                 
-                F_LIST *fentry = &pp[fl_p]->list->list[it];
+                item_dir_list *fentry = &pp[fl_p]->list->list[it];
                 char p_buff[PATH_MAX];
                 
                 if(fentry->fl_dir){

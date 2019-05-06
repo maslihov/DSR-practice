@@ -1,6 +1,6 @@
 #include "dirc.h"
 
-int sort_name(const F_LIST *a, const F_LIST *b)
+int sort_name(const item_dir_list *a, const item_dir_list *b)
 {
     int aa, bb;
     bb = aa = 0;
@@ -23,31 +23,31 @@ int sort_name(const F_LIST *a, const F_LIST *b)
     
 }
 
-void sort_list(D_LIST *list, int (*func)(F_LIST *, F_LIST *))
+void sort_list(dir_list *list, int (*func)(item_dir_list *, item_dir_list *))
 {
-    qsort(list->list, list->len, sizeof(F_LIST), func);
+    qsort(list->list, list->len, sizeof(item_dir_list), func);
 }
 
-void grow_list(D_LIST *list, int dsize)
+void grow_list(dir_list *list, int dsize)
 {
     int nsize;
     
     nsize = list->size + dsize;
     
-    list->list = (F_LIST *)realloc(list->list, nsize * sizeof(F_LIST));;
+    list->list = (item_dir_list *)realloc(list->list, nsize * sizeof(item_dir_list));;
     list->size = nsize;
 }
 
-D_LIST *load_list(char *path)
+dir_list *load_list(char *path)
 {
-    D_LIST *list;
+    dir_list *list;
     DIR *dp;
     struct dirent *edp;
     struct stat st;
     
-    list = (D_LIST *)malloc(sizeof(D_LIST));
+    list = (dir_list *)malloc(sizeof(dir_list));
     
-    list->list = (F_LIST *)malloc(SIZE_STEP_LIST * sizeof(F_LIST));
+    list->list = (item_dir_list *)malloc(SIZE_STEP_LIST * sizeof(item_dir_list));
     list->size = SIZE_STEP_LIST;
     list->len = 0;
     
@@ -62,7 +62,7 @@ D_LIST *load_list(char *path)
             char f_path[PATH_MAX];
             (void)sprintf(f_path, "%s/%s", path, edp->d_name);
             
-            F_LIST *fentry;
+            item_dir_list *fentry;
             fentry = &list->list[list->len];
             fentry->namelen = strlen(edp->d_name);
             fentry->name = strndup(edp->d_name, fentry->namelen);
@@ -83,18 +83,18 @@ D_LIST *load_list(char *path)
     return list;
 }
 
-void reload_list(D_LIST *list, char *path)
+void reload_list(dir_list *list, char *path)
 {
     free_list(list);
     list = load_list(path);
 }
 
 
-void free_list(D_LIST *list)
+void free_list(dir_list *list)
 {
     int i;
     for(i = 0; i < list->len; i++){
-        F_LIST *fentry;
+        item_dir_list *fentry;
         fentry = &list->list[i];
         free(fentry->name);
     }

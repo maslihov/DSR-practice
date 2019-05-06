@@ -11,18 +11,18 @@ typedef struct {
     int namelen;
     struct stat st;
     int fl_dir;
-} F_LIST;
+} item_dir_list;
 
 typedef struct {
-    F_LIST *list;
+    item_dir_list *list;
     int size;
     int len;
-} D_LIST;
+} dir_list;
 
 
-int sort_name(const F_LIST *, const F_LIST *);
-void sort_list(D_LIST *list, int (*)(F_LIST *, F_LIST *));
-void grow_list(D_LIST *, int);
-D_LIST *load_list(char *);
-void reload_list(D_LIST *, char *);
-void free_list(D_LIST *);
+int sort_name(const item_dir_list *, const item_dir_list *);
+void sort_list(dir_list *list, int (*)(item_dir_list *, item_dir_list *));
+void grow_list(dir_list *, int);
+dir_list *load_list(char *);
+void reload_list(dir_list *, char *);
+void free_list(dir_list *);

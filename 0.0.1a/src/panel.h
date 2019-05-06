@@ -20,14 +20,14 @@ typedef struct {
     ITEM **items;
     int c_items;
     char **i_name;
-     
-} F_PANEL;
+} fm_panel;
 
-F_PANEL *init_panel(D_LIST *, int, int);
-void load_menu(F_PANEL *, D_LIST *);
-void reload_panel(F_PANEL *, D_LIST *);
-void clear_menu(F_PANEL *);
-void dest_panel(F_PANEL *);
+fm_panel *init_panel(dir_list *, int, int);
+void load_menu(fm_panel *, dir_list *);
+void reload_panel(fm_panel *, dir_list *);
+void clear_menu(fm_panel *);
+void dest_panel(fm_panel *);
+void goto_item(MENU *, int);
 
 
 

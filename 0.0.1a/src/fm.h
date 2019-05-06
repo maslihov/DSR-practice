@@ -5,8 +5,8 @@
 
 
 struct fm {
-    F_PANEL *panel;
-    D_LIST *list;
+    fm_panel *panel;
+    dir_list *list;
     char *path;
 };
 
