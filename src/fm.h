@@ -13,3 +13,5 @@ struct fm {
 
 #define MAX_EVENTS 1
 #define EV_TIMEOUT 100
+
+void fm_wppath(int, int, char *);

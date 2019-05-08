@@ -64,6 +64,7 @@ int main()
 
                 fl_p = fl_p ? 0 : 1;
                 keypad(pp[fl_p]->panel->m_win, TRUE);
+                fm_wppath(y-1, 0, pp[fl_p]->path);
                 break;
             case KEY_DOWN:
                 menu_driver(pp[fl_p]->panel->menu, REQ_DOWN_ITEM);
@@ -99,10 +100,7 @@ int main()
                     reload_panel(pp[fl_p]->panel, pp[fl_p]->list);
                     
                     /* ---- --- --- */
-                    move(y-1, 0);
-                    clrtoeol();
-                    mvprintw(y-1, 0, "%s", realpath(p_buff, NULL));
-                    refresh();
+                    fm_wppath(y-1, 0, pp[fl_p]->path);
                     break;
                 }
                 
@@ -132,7 +130,8 @@ int main()
             keypad(pp[fl_p]->panel->m_win, TRUE);
             
             goto_item(p_l.panel->menu, get_item[0]);
-            goto_item(p_r.panel->menu, get_item[1]);   
+            goto_item(p_r.panel->menu, get_item[1]); 
+            fm_wppath(y-1, 0, pp[fl_p]->path);  
         }
     }
     
@@ -159,4 +158,13 @@ int main()
     exit(0);
 }
 
-
+void fm_wppath(int y, int x, char *str)
+{
+    int x_max;
+    x_max = getmaxx(stdscr);
+    
+    move(y, x);
+    clrtoeol();
+    mvprintw(y, x, "%.*s", x_max-1,str);
+    refresh();
+}

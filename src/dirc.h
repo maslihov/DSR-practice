@@ -11,6 +11,8 @@ typedef struct {
     int namelen;
     struct stat st;
     int fl_dir;
+    int fl_dotdot_dir;
+    
 } item_dir_list;
 
 typedef struct {

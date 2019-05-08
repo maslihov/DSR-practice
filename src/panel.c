@@ -54,15 +54,19 @@ void load_menu(fm_panel *panel, dir_list *list)
         tm = localtime(&fentry->st.st_mtime);
         strftime(t_buf, sizeof(t_buf), "%d.%m.%y %H:%M", tm);
         
-        if(fentry->fl_dir == 1){
-            (void)sprintf(i_name, "%-*.20s %16s", x+9,\
-                fentry->name, t_buf);
-            
-            panel->items[i] = new_item("/", i_name);
-            
+        if(fentry->fl_dotdot_dir == 1){  
+            panel->items[i] = new_item("^", "..");
             continue;
         }
-        (void)sprintf(i_name, "%-*.20s [%5.5s ] %16s", x,\
+        
+        if(fentry->fl_dir == 1){
+            (void)sprintf(i_name, "%-*.*s %16s", x+9,x+9 ,\
+                fentry->name, t_buf);
+            panel->items[i] = new_item("/", i_name);
+            continue;
+        }
+        
+        (void)sprintf(i_name, "%-*.*s [%5.5s ] %16s", x, x-1,\
             fentry->name, buf_size, t_buf);
         
         

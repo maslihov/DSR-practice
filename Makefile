@@ -5,10 +5,11 @@ LIBS = -lmenu -lpanel -lncurses
 SRC = ./src/
 EXE = fm
 
-.PHONY: assembly clean allclean
+.PHONY: assembly clean allclean nw
 
 assembly: $(EXE)
-  
+
+
 fm.o: $(SRC)fm.c $(SRC)fm.h
 	$(CC) $(CFLAG) $(LIBS) -c -o $@ $< 
 
@@ -30,4 +31,3 @@ clean: *.o
 
 allclean: *.o $(EXE)
 	rm -fv $^
-	

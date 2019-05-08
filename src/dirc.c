@@ -3,25 +3,20 @@
 int sort_name(const void *pa, const void *pb)
 {
     const item_dir_list *a = pa, *b = pb;
-    int aa, bb;
-    bb = aa = 0;
+    
+    if(a->fl_dotdot_dir)
+        return -1;
+    if(b->fl_dotdot_dir)
+        return 1;
+    
+    int aa, bb, scmp;
 
-    if (a->fl_dir || b->fl_dir){
-        aa = strcmp("..", a->name);
-        bb = strcmp("..", b->name);
-        
-        if(aa == bb){
-            aa = a->fl_dir ? 1 : 0;
-            bb = b->fl_dir ? 1 : 0;
-        }
-        
-        if(!aa || !bb){
-            return bb - aa;
-        }
-    }
-    
-    return (bb - aa) + strcmp(a->name, b->name);
-    
+    scmp = strcasecmp(a->name, b->name);
+    aa = a->fl_dir ? 1 : -1;
+    bb = b->fl_dir ? 1 : -1;
+    scmp = scmp < 0 ? -1 : 1;
+
+    return (bb - aa) + scmp;   
 }
 
 void sort_list(dir_list *list, int (*func)(const void *, const void *))
@@ -50,7 +45,10 @@ dir_list *load_list(char *path)
     
     list->list = (item_dir_list *)malloc(SIZE_STEP_LIST * sizeof(item_dir_list));
     list->size = SIZE_STEP_LIST;
-    list->len = 0;
+    list->list[0].name = strndup("..", 2);
+    list->list[0].fl_dir = 1;
+    list->list[0].fl_dotdot_dir = 1;
+    list->len = 1;
     
     
     if((dp=opendir(path)) != NULL){
@@ -58,6 +56,8 @@ dir_list *load_list(char *path)
             if(list->len == list->size)
                 grow_list(list, SIZE_STEP_LIST);
             if(strcmp(edp->d_name, ".") == 0)
+                continue;
+            if(strcmp(edp->d_name, "..") == 0)
                 continue;
                 
             char f_path[PATH_MAX];
@@ -72,7 +72,7 @@ dir_list *load_list(char *path)
             fentry->st = st;
             
             fentry->fl_dir = (edp->d_type == DT_DIR) ? 1 : 0;
-            
+            fentry->fl_dotdot_dir = 0;
             
             list->len++;
         }
