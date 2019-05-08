@@ -3,19 +3,20 @@
 int sort_name(const void *pa, const void *pb)
 {
     const item_dir_list *a = pa, *b = pb;
-    
-    if(a->fl_dotdot_dir)
-        return -1;
-    if(b->fl_dotdot_dir)
-        return 1;
-    
     int aa, bb, scmp;
 
+    aa = a->fl_dotdot_dir;
+    bb = b->fl_dotdot_dir;
+    
+    if(aa != bb)
+        return (bb - aa);
+    
     scmp = strcasecmp(a->name, b->name);
-    aa = a->fl_dir ? 1 : -1;
-    bb = b->fl_dir ? 1 : -1;
     scmp = scmp < 0 ? -1 : 1;
-
+    
+    aa += a->fl_dir;
+    bb += b->fl_dir;
+    
     return (bb - aa) + scmp;   
 }
 
@@ -55,9 +56,9 @@ dir_list *load_list(char *path)
         while((edp=readdir(dp)) != NULL){
             if(list->len == list->size)
                 grow_list(list, SIZE_STEP_LIST);
-            if(strcmp(edp->d_name, ".") == 0)
+            if(strncmp(edp->d_name, ".", 3) == 0)
                 continue;
-            if(strcmp(edp->d_name, "..") == 0)
+            if(strncmp(edp->d_name, "..", 3) == 0)
                 continue;
                 
             char f_path[PATH_MAX];
@@ -71,7 +72,7 @@ dir_list *load_list(char *path)
             stat(f_path, &st);
             fentry->st = st;
             
-            fentry->fl_dir = (edp->d_type == DT_DIR) ? 1 : 0;
+            fentry->fl_dir = (edp->d_type == DT_DIR) ? 1 : -1;
             fentry->fl_dotdot_dir = 0;
             
             list->len++;
