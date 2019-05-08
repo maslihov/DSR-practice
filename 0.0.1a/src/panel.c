@@ -1,11 +1,10 @@
 #include "panel.h"
-#include "dirc.h"
-#include "humanize.h"
 
-F_PANEL *init_panel(D_LIST *list, int sy, int sx)
+
+fm_panel *init_panel(dir_list *list, int sy, int sx)
 {
-    F_PANEL *panel;
-    panel = (F_PANEL *)malloc(sizeof(F_PANEL));
+    fm_panel *panel;
+    panel = (fm_panel *)malloc(sizeof(fm_panel));
 
     int y, x, c_items;
     panel->c_items = c_items = list->len;
@@ -24,7 +23,7 @@ F_PANEL *init_panel(D_LIST *list, int sy, int sx)
     return panel;
 }
 
-void load_menu(F_PANEL *panel, D_LIST *list)
+void load_menu(fm_panel *panel, dir_list *list)
 {
     panel->menu = (MENU *)malloc(sizeof(MENU *));
     
@@ -40,7 +39,7 @@ void load_menu(F_PANEL *panel, D_LIST *list)
     panel->i_name = (char **)calloc(c_items+1, sizeof(char *));
 
     for(i = 0; i < c_items; i++){
-        F_LIST *fentry = &list->list[i];
+        item_dir_list *fentry = &list->list[i];
         char *i_name;
         
         panel->i_name[i] = (char *)malloc(ITEM_STR_LEN * sizeof(char));
@@ -86,14 +85,14 @@ void load_menu(F_PANEL *panel, D_LIST *list)
     
 }
 
-void reload_panel(F_PANEL *panel, D_LIST *list)
+void reload_panel(fm_panel *panel, dir_list *list)
 {
     clear_menu(panel);
     load_menu(panel, list);
     
 }
 
-void clear_menu(F_PANEL *panel)
+void clear_menu(fm_panel *panel)
 {
     unpost_menu(panel->menu);
     
@@ -109,7 +108,7 @@ void clear_menu(F_PANEL *panel)
 
 }
 
-void dest_panel(F_PANEL *panel)
+void dest_panel(fm_panel *panel)
 {
     keypad(stdscr, TRUE);
     
@@ -120,6 +119,13 @@ void dest_panel(F_PANEL *panel)
     delwin(panel->win);
     delwin(panel->m_win);
     free(panel);
+}
+
+void goto_item(MENU *menu, const int it)
+{
+    int i;
+    for(i = 0; i != it; i++)
+        menu_driver(menu, REQ_DOWN_ITEM);
 }
 
 
