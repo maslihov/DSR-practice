@@ -20,8 +20,8 @@ typedef struct {
 } dir_list;
 
 
-int sort_name(const item_dir_list *, const item_dir_list *);
-void sort_list(dir_list *list, int (*)(item_dir_list *, item_dir_list *));
+int sort_name(const void *, const void *);
+void sort_list(dir_list *list, int (*func)(const void *, const void *));
 void grow_list(dir_list *, int);
 dir_list *load_list(char *);
 void reload_list(dir_list *, char *);

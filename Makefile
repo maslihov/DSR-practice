@@ -1,15 +1,33 @@
-# Проект маленький поэтому пока так.
 CC = gcc
-CFLAG = -Wall -g
+CFLAG = -Wall -g 
 LIBS = -lmenu -lpanel -lncurses
-LNW = -lmenuw -lpanelw -lncursesw
+#LIBS = -lmenuw -lpanelw -lncursesw
+SRC = ./src/
 EXE = fm
-SRCPATH = ./src/*.c
 
-$(EXE): $(SRCPATH) ./src/*.h
-	$(CC) $(CFLAG) $(LIBS) $(SRCPATH) -o $@
+.PHONY: assembly clean allclean
+
+assembly: $(EXE)
+  
+fm.o: $(SRC)fm.c $(SRC)fm.h
+	$(CC) $(CFLAG) $(LIBS) -c -o $@ $< 
+
+panel.o: $(SRC)panel.c $(SRC)panel.h
+	$(CC) $(CFLAG) $(LIBS) -c -o $@ $< 
+	
+dirc.o: $(SRC)dirc.c $(SRC)dirc.h
+	$(CC) $(CFLAG) $(LIBS) -c -o $@ $< 
+	
+humanize.o: $(SRC)humanize.c $(SRC)humanize.h
+	$(CC) $(CFLAG) $(LIBS) -c -o $@ $< 
+
+$(EXE): fm.o panel.o dirc.o humanize.o
+	$(CC) $(CFLAG) $(LIBS) -o $@ $^
 	ls -lh $@
-nw: $(SRCPATH) ./src/*.h
-	$(CC) $(CFLAG) $(LNW) $(SRCPATH) -o $(EXE)
-	ls -lh $(EXE)
+
+clean: *.o
+	rm -fv $^
+
+allclean: *.o $(EXE)
+	rm -fv $^
 	

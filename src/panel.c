@@ -30,8 +30,7 @@ void load_menu(fm_panel *panel, dir_list *list)
     int i, y, x, c_items;
     getmaxyx(panel->m_win, y, x);
     
-    x = (x > ITEM_STR_LEN ? ITEM_STR_LEN - 10 : x - 15) - \
-        TIME_STR_LEN;
+    x -= 31;
     
     panel->c_items = c_items = list->len;
     
@@ -42,7 +41,7 @@ void load_menu(fm_panel *panel, dir_list *list)
         item_dir_list *fentry = &list->list[i];
         char *i_name;
         
-        panel->i_name[i] = (char *)malloc(ITEM_STR_LEN * sizeof(char));
+        panel->i_name[i] = (char *)malloc(ITEM_STR_LEN + x * sizeof(char));
         i_name = panel->i_name[i];
         
         char buf_size[HUMANVALSTR_LEN];
@@ -50,16 +49,20 @@ void load_menu(fm_panel *panel, dir_list *list)
             (int64_t)fentry->st.st_size, "", HN_AUTOSCALE, \
             HN_B | HN_NOSPACE | HN_DECIMAL);
         
-        char t_buf[TIME_STR_LEN];
+        char t_buf[TIME_STR_LEN + x];
         struct tm *tm;
         tm = localtime(&fentry->st.st_mtime);
         strftime(t_buf, sizeof(t_buf), "%d.%m.%y %H:%M", tm);
         
         if(fentry->fl_dir == 1){
-            panel->items[i] = new_item("/", fentry->name);
+            (void)sprintf(i_name, "%-*.20s %16s", x+9,\
+                fentry->name, t_buf);
+            
+            panel->items[i] = new_item("/", i_name);
+            
             continue;
         }
-        (void)sprintf(i_name, "%-*.20s [%+5.5s ] %+16s", x,\
+        (void)sprintf(i_name, "%-*.20s [%5.5s ] %16s", x,\
             fentry->name, buf_size, t_buf);
         
         

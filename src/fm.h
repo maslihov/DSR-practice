@@ -1,6 +1,7 @@
 #include <limits.h>
 #include <stdio.h>
 #include <sys/epoll.h>
+#include <unistd.h>
 #include "panel.h"
 
 

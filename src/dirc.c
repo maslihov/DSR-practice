@@ -1,7 +1,8 @@
 #include "dirc.h"
 
-int sort_name(const item_dir_list *a, const item_dir_list *b)
+int sort_name(const void *pa, const void *pb)
 {
+    const item_dir_list *a = pa, *b = pb;
     int aa, bb;
     bb = aa = 0;
 
@@ -23,7 +24,7 @@ int sort_name(const item_dir_list *a, const item_dir_list *b)
     
 }
 
-void sort_list(dir_list *list, int (*func)(item_dir_list *, item_dir_list *))
+void sort_list(dir_list *list, int (*func)(const void *, const void *))
 {
     qsort(list->list, list->len, sizeof(item_dir_list), func);
 }
