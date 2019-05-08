@@ -60,7 +60,7 @@ void load_menu(F_PANEL *panel, D_LIST *list)
             panel->items[i] = new_item("/", fentry->name);
             continue;
         }
-        (void)sprintf(i_name, "%-*.20s [%+5.5s ] %s", x,\
+        (void)sprintf(i_name, "%-*.20s [%+5.5s ] %+16s", x,\
             fentry->name, buf_size, t_buf);
         
         
