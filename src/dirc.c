@@ -46,6 +46,7 @@ dir_list *load_list(char *path)
     
     list->list = (item_dir_list *)malloc(SIZE_STEP_LIST * sizeof(item_dir_list));
     list->size = SIZE_STEP_LIST;
+    
     list->list[0].name = strndup("..", 2);
     list->list[0].fl_dir = 1;
     list->list[0].fl_dotdot_dir = 1;

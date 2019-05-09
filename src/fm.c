@@ -1,164 +1,156 @@
 #include "fm.h"
 
-int main()
+void fm_create(struct fm *fm)
 {
-    setlocale(LC_CTYPE, "");
+    fm->pp[0] = &fm->p_l;
+    fm->pp[1] = &fm->p_r; 
+    fm->get_item[0] = 0;
+    fm->get_item[1] = 0;
+    fm->p_l.path = realpath (".", NULL);
+    fm->p_r.path = realpath (".", NULL);
+    fm->p_l.list = load_list(fm->p_l.path);
+    fm->p_r.list = load_list(fm->p_r.path);
 
-    struct fm p_l, p_r;
-    struct fm *pp[] = {&p_l, &p_r};
-    int y, y2, x, x2, fl_p, i, stop;
-    int get_item[] = {0, 0};
-    PANEL *top_p;
-    
-    int event_count;
-    struct epoll_event event, events[MAX_EVENTS];
-    int epoll_fd = epoll_create1(0);
-    
-    event.events = EPOLLIN | EPOLLPRI;
-    event.data.fd = 0;
-    epoll_ctl(epoll_fd, EPOLL_CTL_ADD, 0, &event);
-    stop = 1;
-    
-    
-    p_l.path = realpath (".", NULL);
-    p_r.path = realpath (".", NULL);
-
-    p_l.list = load_list(p_l.path);
-    p_r.list = load_list(p_r.path);
-
-    
-    initscr();
-    
-    timeout(0);
-    noecho();
-    keypad(stdscr, TRUE);
-
-
-    getmaxyx(stdscr, y, x);
-    p_l.panel = init_panel(p_l.list, 2, 0);
-    p_r.panel = init_panel(p_r.list, 2, x/2);
+    getmaxyx(stdscr, fm->y, fm->x);
+    fm->p_l.panel = init_panel(fm->p_l.list, 2, 0);
+    fm->p_r.panel = init_panel(fm->p_r.list, 2,  fm->x/2);
    
-    set_panel_userptr(p_l.panel->panel, p_r.panel->panel);
-    set_panel_userptr(p_r.panel->panel, p_l.panel->panel);
+    set_panel_userptr(fm->p_l.panel->panel, fm->p_r.panel->panel);
+    set_panel_userptr(fm->p_r.panel->panel, fm->p_l.panel->panel);
     
-    top_p = p_r.panel->panel;
-    fl_p = 1;
-    keypad(pp[fl_p]->panel->m_win, TRUE);
-    
+    fm->top_p = fm->p_r.panel->panel;
+    fm->fl_p = 1;
+    keypad( fm->pp[fm->fl_p]->panel->m_win, TRUE);
+}
+
+void fm_resize_win(struct fm *fm)
+{
+    int y2, x2;
+    int fl_p = fm->fl_p;
+
+    getmaxyx(stdscr, y2, x2);
+    if(fm->y!=y2 || fm->x!=x2){
+        fm->y = y2;
+        fm->x = x2;
+        
+        dest_panel(fm->p_l.panel);
+        dest_panel(fm->p_r.panel);
+        
+        fm->p_l.panel = init_panel(fm->p_l.list, 2, 0);
+        fm->p_r.panel = init_panel(fm->p_r.list, 2, fm->x/2);
+        
+        refresh();
+        keypad(fm->pp[fl_p]->panel->m_win, TRUE);
+        
+        goto_item(fm->p_l.panel->menu, fm->get_item[0]);
+        goto_item(fm->p_r.panel->menu, fm->get_item[1]); 
+        fm_wppath(fm->y-1, 0, fm->pp[fl_p]->path);
+    }
+
+    update_panels();
+    doupdate();
+}
+
+int32_t fm_keyswitch(struct fm *fm)
+{
+    int fl_p = fm->fl_p;
+    struct fm_panel *fmp = fm->pp[fl_p];
+
     int32_t c;
-    while(stop){
-        event_count = epoll_wait(epoll_fd, events, MAX_EVENTS, EV_TIMEOUT);
-        for(i = 0; i < event_count; i++){
-            if(events[i].data.fd == 0){ 
-                    
-                    
-            }
-        }
-           
-        c = wgetch(pp[fl_p]->panel->m_win);
+    for(;;)
+    {
+        c = wgetch(fmp->panel->m_win);
         switch(c)
         {
             case '\t': 
-                top_p = (PANEL *)panel_userptr(top_p);
-                top_panel(top_p);
+                fm->top_p = (PANEL *)panel_userptr(fm->top_p);
+                top_panel(fm->top_p);
 
                 fl_p = fl_p ? 0 : 1;
-                keypad(pp[fl_p]->panel->m_win, TRUE);
-                fm_wppath(y-1, 0, pp[fl_p]->path);
+                fm->fl_p = fl_p;
+                keypad(fmp->panel->m_win, TRUE);
+                fm_wppath(fm->y-1, 0, fmp->path);
                 break;
             case KEY_DOWN:
-                menu_driver(pp[fl_p]->panel->menu, REQ_DOWN_ITEM);
-                get_item[fl_p] = item_index(\
-                    current_item(pp[fl_p]->panel->menu));
+                menu_driver(fmp->panel->menu, REQ_DOWN_ITEM);
+                fm->get_item[fl_p] = item_index(\
+                    current_item(fmp->panel->menu));
                 break;
             case KEY_UP:
-                menu_driver(pp[fl_p]->panel->menu, REQ_UP_ITEM);
-                get_item[fl_p] = item_index(\
-                    current_item(pp[fl_p]->panel->menu));
+                menu_driver(fmp->panel->menu, REQ_UP_ITEM);
+                fm->get_item[fl_p] = item_index(\
+                    current_item(fmp->panel->menu));
                 break;
-            case 10:    // Enter 
-            {
+            case KEY_NPAGE:
+				menu_driver(fmp->panel->menu, REQ_SCR_DPAGE);
+                fm->get_item[fl_p] = item_index(\
+                    current_item(fmp->panel->menu));
+				break;
+			case KEY_PPAGE:
+				menu_driver(fmp->panel->menu, REQ_SCR_UPAGE);
+                fm->get_item[fl_p] = item_index(\
+                    current_item(fmp->panel->menu));
+				break;
+            case KEY_HOME:
+				menu_driver(fmp->panel->menu, REQ_FIRST_ITEM);
+                fm->get_item[fl_p] = item_index(\
+                    current_item(fmp->panel->menu));
+				break;
+             case KEY_END:
+				menu_driver(fmp->panel->menu, REQ_LAST_ITEM);
+                fm->get_item[fl_p] = item_index(\
+                    current_item(fmp->panel->menu));
+				break;
+            case 10: // enter         
+                menu_driver(fmp->panel->menu, REQ_TOGGLE_ITEM);
                 
-                menu_driver(pp[fl_p]->panel->menu, REQ_TOGGLE_ITEM);
                 int it;
-                it = item_index(current_item(pp[fl_p]->panel->menu));
+                it = item_index(current_item(fmp->panel->menu));
                 
-                item_dir_list *fentry = &pp[fl_p]->list->list[it];
+                item_dir_list *fentry = &fmp->list->list[it];
                 char p_buff[PATH_MAX];
                 
                 if(fentry->fl_dir){
-                
-                    sprintf(p_buff, "%s/%s", pp[fl_p]->path, fentry->name);
+                    sprintf(p_buff, "%s/%s", fmp->path, fentry->name);
+                    free(fmp->path);
                     
-                    free(pp[fl_p]->path);
+                    fmp->path = realpath(p_buff, NULL);
                     
-                    pp[fl_p]->path = realpath(p_buff, NULL);
+                    free_list(fmp->list);
+                    fmp->list = load_list(fmp->path);
                     
-                    free_list(pp[fl_p]->list);
-                    pp[fl_p]->list = load_list(pp[fl_p]->path);
+                    reload_panel(fmp->panel, fmp->list);
                     
-                    reload_panel(pp[fl_p]->panel, pp[fl_p]->list);
-                    
-                    /* ---- --- --- */
-                    fm_wppath(y-1, 0, pp[fl_p]->path);
+                    fm_wppath(fm->y-1, 0, fmp->path);
                     break;
                 }
-                
                 case KEY_F(10):
-                {
-                    stop = 0;
-                    break;
-                }
-            } 
-        }
-        
-        update_panels();
-        doupdate();
-        
-        getmaxyx(stdscr, y2, x2);
-        if(y!=y2 || x!=x2){
-            y = y2;
-            x = x2;
-            
-            dest_panel(p_l.panel);
-            dest_panel(p_r.panel);
-            
-            p_l.panel = init_panel(p_l.list, 2, 0);
-            p_r.panel = init_panel(p_r.list, 2, x/2);
-            
-            refresh();
-            keypad(pp[fl_p]->panel->m_win, TRUE);
-            
-            goto_item(p_l.panel->menu, get_item[0]);
-            goto_item(p_r.panel->menu, get_item[1]); 
-            fm_wppath(y-1, 0, pp[fl_p]->path);  
+                case ERR:
+                    goto EXIT;
         }
     }
-    
 
+EXIT:
+    update_panels();
+    doupdate();
+    refresh();
 
-
-
-
-    endwin();
-    
-    close(epoll_fd);
-    dest_panel(p_l.panel);
-    dest_panel(p_r.panel);
-
-    
-
-    free_list(p_l.list);
-    free_list(p_r.list);
-    
-    free(p_l.path);
-    free(p_r.path);
-
-    
-    exit(0);
+    return c;
 }
 
-void fm_wppath(int y, int x, char *str)
+void fm_destroy(struct fm *fm)
+{
+    dest_panel(fm->p_l.panel);
+    dest_panel(fm->p_r.panel);
+
+    free_list(fm->p_l.list);
+    free_list(fm->p_r.list);
+
+    free(fm->p_l.path);
+    free(fm->p_r.path);
+}
+
+extern void fm_wppath(int y, int x, char *str)
 {
     int x_max;
     x_max = getmaxx(stdscr);

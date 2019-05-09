@@ -9,6 +9,8 @@ EXE = fm
 
 assembly: $(EXE)
 
+main.o: $(SRC)main.c $(SRC)main.h
+	$(CC) $(CFLAG) $(LIBS) -c -o $@ $<
 
 fm.o: $(SRC)fm.c $(SRC)fm.h
 	$(CC) $(CFLAG) $(LIBS) -c -o $@ $< 
@@ -22,12 +24,12 @@ dirc.o: $(SRC)dirc.c $(SRC)dirc.h
 humanize.o: $(SRC)humanize.c $(SRC)humanize.h
 	$(CC) $(CFLAG) $(LIBS) -c -o $@ $< 
 
-$(EXE): fm.o panel.o dirc.o humanize.o
+$(EXE):main.o fm.o panel.o dirc.o humanize.o
 	$(CC) $(CFLAG) $(LIBS) -o $@ $^
 	ls -lh $@
 
-clean: *.o
+clean:  *.o
 	rm -fv $^
 
-allclean: *.o $(EXE)
-	rm -fv $^
+allclean: *.o 
+	rm -fv $(EXE) $^ 

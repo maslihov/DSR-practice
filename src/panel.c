@@ -1,6 +1,5 @@
 #include "panel.h"
 
-
 fm_panel *init_panel(dir_list *list, int sy, int sx)
 {
     fm_panel *panel;
@@ -15,7 +14,9 @@ fm_panel *init_panel(dir_list *list, int sy, int sx)
     box(panel->win, 0, 0);
     getmaxyx(panel->win, y, x);
     panel->m_win = derwin(panel->win, y-2, x-1, 1, 1);
-    
+    nodelay(panel->m_win, TRUE);
+    keypad(panel->m_win, TRUE);
+
     panel->panel = new_panel(panel->win);
     
     load_menu(panel, list);
