@@ -14,28 +14,38 @@ int main()
     
     event.events = EPOLLIN | EPOLLPRI;
     event.data.fd = 0;
-    epoll_ctl(epoll_fd, EPOLL_CTL_ADD, 0, &event);
-    keep_running = 1;
+    epoll_ctl(epoll_fd, EPOLL_CTL_ADD, STDIN_FILENO, &event);
     
+    fm.inotify_fd = inotify_init();
+    epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fm.inotify_fd, &event);
+
+
     initscr();
-    timeout(0);
+    start_color();
     nodelay(stdscr, TRUE);
     noecho();
     keypad(stdscr, TRUE);
 
     fm_create(&fm);
+    if(strcmp(fm.p_l.path, fm.p_l.path) == 0){
+        fm.p_r.inotify_wd = fm.p_l.inotify_wd = inotify_add_watch( fm.inotify_fd,\
+            fm.p_l.path, IN_MODIFY | IN_CREATE | IN_DELETE );
+    }
+
  
+    keep_running = 1;
     while(keep_running){
         event_count = epoll_wait(epoll_fd, events, MAX_EVENTS, EV_TIMEOUT);
         for(i = 0; i < event_count; i++){
-            switch(events[i].data.fd)
-            {
-                case STDIN_FILENO:
-                    c = fm_keyswitch(&fm);
-                    if(c == KEY_F(10))
-                        keep_running = 0;
-                    break;
+            if(events[i].data.fd == STDIN_FILENO){
+                c = fm_keyswitch(&fm);
+                if(c == KEY_F(10))
+                    keep_running = 0;
             }
+            if(events[i].data.fd == fm.inotify_fd){
+               //fm_proc_event(&fm);
+            }
+            
         }
         
 
@@ -44,6 +54,8 @@ int main()
 
 
     endwin();
+
+    close(fm.inotify_fd);
     close(epoll_fd);
     fm_destroy(&fm);
 

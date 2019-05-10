@@ -5,7 +5,7 @@ LIBS = -lmenu -lpanel -lncurses
 SRC = ./src/
 EXE = fm
 
-.PHONY: assembly clean allclean nw
+.PHONY: assembly clean allclean
 
 assembly: $(EXE)
 

@@ -44,6 +44,7 @@ void fm_resize_win(struct fm *fm)
         
         goto_item(fm->p_l.panel->menu, fm->get_item[0]);
         goto_item(fm->p_r.panel->menu, fm->get_item[1]); 
+
         fm_wppath(fm->y-1, 0, fm->pp[fl_p]->path);
     }
 
@@ -54,7 +55,7 @@ void fm_resize_win(struct fm *fm)
 int32_t fm_keyswitch(struct fm *fm)
 {
     int fl_p = fm->fl_p;
-    struct fm_panel *fmp = fm->pp[fl_p];
+    struct fm_pv *fmp = fm->pp[fl_p];
 
     int32_t c;
     for(;;)
@@ -101,7 +102,7 @@ int32_t fm_keyswitch(struct fm *fm)
                 fm->get_item[fl_p] = item_index(\
                     current_item(fmp->panel->menu));
 				break;
-            case 10: // enter         
+            case 10: // enter   
                 menu_driver(fmp->panel->menu, REQ_TOGGLE_ITEM);
                 
                 int it;
@@ -110,7 +111,7 @@ int32_t fm_keyswitch(struct fm *fm)
                 item_dir_list *fentry = &fmp->list->list[it];
                 char p_buff[PATH_MAX];
                 
-                if(fentry->fl_dir){
+                if(fentry->fl_dir > 0){
                     sprintf(p_buff, "%s/%s", fmp->path, fentry->name);
                     free(fmp->path);
                     
@@ -122,8 +123,17 @@ int32_t fm_keyswitch(struct fm *fm)
                     reload_panel(fmp->panel, fmp->list);
                     
                     fm_wppath(fm->y-1, 0, fmp->path);
+                   
+                    }
                     break;
-                }
+                case KEY_F(5):
+                    free_list(fmp->list);
+                    fmp->list = load_list(fmp->path);
+                    
+                    reload_panel(fmp->panel, fmp->list);
+                    
+                    fm_wppath(fm->y-1, 0, fmp->path);
+                    break;
                 case KEY_F(10):
                 case ERR:
                     goto EXIT;
@@ -150,7 +160,7 @@ void fm_destroy(struct fm *fm)
     free(fm->p_r.path);
 }
 
-extern void fm_wppath(int y, int x, char *str)
+void fm_wppath(int y, int x, char *str)
 {
     int x_max;
     x_max = getmaxx(stdscr);
@@ -159,4 +169,27 @@ extern void fm_wppath(int y, int x, char *str)
     clrtoeol();
     mvprintw(y, x, "%.*s", x_max-1,str);
     refresh();
+}
+
+int fm_proc_event(struct fm *fm)
+{
+    int length, i = 0;
+    char buffer[INOTIFY_BUF_LEN];
+
+    length = read(  fm->inotify_fd, buffer, INOTIFY_BUF_LEN);  
+ 
+    if ( length == 0 ) {
+        return 0;
+    }  
+ 
+    while ( i < length ) {
+        struct inotify_event *event = ( struct inotify_event * ) &buffer[ i ];
+        if ( event->len ) {
+            if ( event->mask & IN_MODIFY ) {
+                printf("%d \n", event->mask);
+            }
+        }
+        i += INOTIFY_EVENT_SIZE + event->len;
+    }
+    return length;
 }
