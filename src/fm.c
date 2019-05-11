@@ -186,7 +186,7 @@ int fm_proc_event(struct fm *fm)
         struct inotify_event *event = ( struct inotify_event * ) &buffer[ i ];
         if ( event->len ) {
             if ( event->mask & IN_MODIFY ) {
-                printf("%d \n", event->mask);
+                
             }
         }
         i += INOTIFY_EVENT_SIZE + event->len;
