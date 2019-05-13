@@ -52,6 +52,37 @@ void fm_resize_win(struct fm *fm)
     doupdate();
 }
 
+void fm_reload_win(struct fm *fm)
+{
+    int y2, x2;
+    int fl_p = fm->fl_p;
+
+    getmaxyx(stdscr, y2, x2);
+    
+    fm->y = y2;
+    fm->x = x2;
+    
+    dest_panel(fm->p_l.panel);
+    dest_panel(fm->p_r.panel);
+    
+    free_list(fm->p_l.list);
+    free_list(fm->p_r.list);
+    
+    fm->p_l.list = load_list(fm->p_l.path);
+    fm->p_r.list = load_list(fm->p_r.path);
+    
+    fm->p_l.panel = init_panel(fm->p_l.list, 2, 0);
+    fm->p_r.panel = init_panel(fm->p_r.list, 2, fm->x/2);
+    
+    refresh();
+    keypad(fm->pp[fl_p]->panel->m_win, TRUE);
+    
+    fm_wppath(fm->y-1, 0, fm->pp[fl_p]->path);
+
+    update_panels();
+    doupdate();
+}
+
 int32_t fm_keyswitch(struct fm *fm)
 {
     int fl_p = fm->fl_p;
@@ -127,12 +158,7 @@ int32_t fm_keyswitch(struct fm *fm)
                     }
                     break;
                 case KEY_F(5):
-                    free_list(fmp->list);
-                    fmp->list = load_list(fmp->path);
-                    
-                    reload_panel(fmp->panel, fmp->list);
-                    
-                    fm_wppath(fm->y-1, 0, fmp->path);
+                    fm_reload_win(fm);
                     break;
                 case KEY_F(10):
                 case ERR:
@@ -175,21 +201,27 @@ int fm_proc_event(struct fm *fm)
 {
     int length, i = 0;
     char buffer[INOTIFY_BUF_LEN];
+    
+    static int fl = 0;
 
-    length = read(  fm->inotify_fd, buffer, INOTIFY_BUF_LEN);  
+    length = read(fm->inotify_fd, buffer, INOTIFY_BUF_LEN);  
  
-    if ( length == 0 ) {
+    if ( length == 0 && fl == 0) {
         return 0;
     }  
  
+    /*
     while ( i < length ) {
-        struct inotify_event *event = ( struct inotify_event * ) &buffer[ i ];
+        struct inotify_event *event = ( struct inotify_event * ) &buffer[i];
         if ( event->len ) {
             if ( event->mask & IN_MODIFY ) {
-                
+
             }
         }
         i += INOTIFY_EVENT_SIZE + event->len;
     }
+*/
+    fm_reload_win(fm);
+    fl = 1;
     return length;
 }

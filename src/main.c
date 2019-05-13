@@ -25,6 +25,7 @@ int main()
     nodelay(stdscr, TRUE);
     noecho();
     keypad(stdscr, TRUE);
+    usage();
 
     fm_create(&fm);
     if(strcmp(fm.p_l.path, fm.p_l.path) == 0){
@@ -60,4 +61,9 @@ int main()
     fm_destroy(&fm);
 
     exit(0);
+}
+
+void usage(void)
+{
+    mvprintw(0,0,"[F5 - Reloade] [F10 - EXIT]");
 }

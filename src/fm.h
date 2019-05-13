@@ -31,6 +31,7 @@ struct fm {
 void fm_create(struct fm *);
 void fm_destroy(struct fm *);
 void fm_resize_win(struct fm *);
+void fm_reload_win(struct fm *fm);
 int32_t fm_keyswitch(struct fm *);
 void fm_wppath(int, int, char *);
 int fm_proc_event(struct fm *);
