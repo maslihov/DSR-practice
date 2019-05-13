@@ -3,6 +3,7 @@
 #include <sys/epoll.h>
 #include <sys/inotify.h>
 #include <unistd.h>
+#include <sys/time.h>
 #include "panel.h"
 
 #define INOTIFY_EVENT_SIZE  ( sizeof (struct inotify_event) )

@@ -9,15 +9,17 @@ int main()
     int32_t c;
 
     int event_count;
-    struct epoll_event event, events[MAX_EVENTS];
+    struct epoll_event event, event2, events[MAX_EVENTS];
     int epoll_fd = epoll_create1(0);
     
-    event.events = EPOLLIN | EPOLLPRI;
+    event.events = EPOLLIN | EPOLLOUT;
     event.data.fd = 0;
     epoll_ctl(epoll_fd, EPOLL_CTL_ADD, STDIN_FILENO, &event);
     
-    fm.inotify_fd = inotify_init();
-    epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fm.inotify_fd, &event);
+    event2.events = EPOLLIN | EPOLLOUT;
+    event2.data.fd = fm.inotify_fd = inotify_init1(IN_NONBLOCK);
+    
+    epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fm.inotify_fd, &event2);
 
 
     initscr();
@@ -36,17 +38,20 @@ int main()
  
     keep_running = 1;
     while(keep_running){
-        event_count = epoll_wait(epoll_fd, events, MAX_EVENTS, EV_TIMEOUT);
+        event_count = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
+         
         for(i = 0; i < event_count; i++){
+            
             if(events[i].data.fd == STDIN_FILENO){
                 c = fm_keyswitch(&fm);
                 if(c == KEY_F(10))
                     keep_running = 0;
+               
             }
             if(events[i].data.fd == fm.inotify_fd){
-               //fm_proc_event(&fm);
+                fm_proc_event(&fm);
             }
-            
+           
         }
         
 

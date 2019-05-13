@@ -29,6 +29,11 @@ void fm_reload_win(struct fm *fm)
     int y2, x2;
     int fl_p = fm->fl_p;
 
+    struct timeval  tv1;
+    static struct timeval  tv2;
+    gettimeofday(&tv1, NULL);
+    if((tv2.tv_sec+1) > tv1.tv_sec) goto EXIT;
+
     getmaxyx(stdscr, y2, x2);
     if((fm->y!=y2 || fm->x!=x2)|| fm->fl_reload){
         fm->y = y2;
@@ -37,6 +42,11 @@ void fm_reload_win(struct fm *fm)
         dest_panel(fm->p_l.panel);
         dest_panel(fm->p_r.panel);
         
+        if(fm->fl_reload){
+             reload_list(fm->p_l.list, fm->p_l.path);
+             reload_list(fm->p_r.list, fm->p_r.path);
+        }
+
         fm->p_l.panel = init_panel(fm->p_l.list, 2, 0);
         fm->p_r.panel = init_panel(fm->p_r.list, 2, fm->x/2);
         
@@ -52,8 +62,11 @@ void fm_reload_win(struct fm *fm)
         fm->fl_reload = 0;
     }
 
+
     update_panels();
     doupdate();
+EXIT:
+    gettimeofday(&tv2, NULL);
 }
 
 int32_t fm_keyswitch(struct fm *fm)
@@ -129,6 +142,12 @@ int32_t fm_keyswitch(struct fm *fm)
                     fm_wppath(fm->y-1, 0, fmp->path);
                    
                     }
+                    if(fm->p_r.inotify_wd != fm->p_l.inotify_wd){
+                        inotify_rm_watch(fm->inotify_fd, fm->pp[fl_p]->inotify_wd);
+                    }
+                    fm->pp[fl_p]->inotify_wd = inotify_add_watch( fm->inotify_fd,\
+                         fm->pp[fl_p]->path, IN_MODIFY | IN_CREATE | IN_DELETE );
+
                     break;
                 case KEY_F(5):
                     fm->fl_reload = 1;
@@ -172,26 +191,18 @@ void fm_wppath(int y, int x, char *str)
 
 int fm_proc_event(struct fm *fm)
 {
-    int length, i = 0;
+    int length, i  = 0;
     char buffer[INOTIFY_BUF_LEN];
-    
-    static int fl = 0;
 
-    length = read(fm->inotify_fd, buffer, INOTIFY_BUF_LEN);  
- 
-    if ( length == 0 && fl == 0) {
-        return 0;
-    }  
- 
+    length = read(fm->inotify_fd, buffer, INOTIFY_BUF_LEN); 
     while ( i < length ) {
-        struct inotify_event *event = ( struct inotify_event * ) &buffer[i];
-        if ( event->len ) {
-            if ( event->mask & IN_MODIFY ) {
-
+        struct inotify_event *event = ( struct inotify_event * ) &buffer[ i ];
+            if ( event->len ) {
+                if ( event->mask & (IN_MODIFY | IN_CREATE | IN_DELETE) ) {
+                    fm->fl_reload = 1;
+                }
             }
-        }
-        i += INOTIFY_EVENT_SIZE + event->len;
+            i += INOTIFY_EVENT_SIZE + event->len;
     }
-
     return length;
 }
