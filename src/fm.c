@@ -2,6 +2,7 @@
 
 void fm_create(struct fm *fm)
 {
+    fm->fl_reload = 0;
     fm->pp[0] = &fm->p_l;
     fm->pp[1] = &fm->p_r; 
     fm->get_item[0] = 0;
@@ -23,13 +24,13 @@ void fm_create(struct fm *fm)
     keypad( fm->pp[fm->fl_p]->panel->m_win, TRUE);
 }
 
-void fm_resize_win(struct fm *fm)
+void fm_reload_win(struct fm *fm)
 {
     int y2, x2;
     int fl_p = fm->fl_p;
 
     getmaxyx(stdscr, y2, x2);
-    if(fm->y!=y2 || fm->x!=x2){
+    if((fm->y!=y2 || fm->x!=x2)|| fm->fl_reload){
         fm->y = y2;
         fm->x = x2;
         
@@ -42,42 +43,14 @@ void fm_resize_win(struct fm *fm)
         refresh();
         keypad(fm->pp[fl_p]->panel->m_win, TRUE);
         
-        goto_item(fm->p_l.panel->menu, fm->get_item[0]);
-        goto_item(fm->p_r.panel->menu, fm->get_item[1]); 
+        if(!fm->fl_reload){
+            goto_item(fm->p_l.panel->menu, fm->get_item[0]);
+            goto_item(fm->p_r.panel->menu, fm->get_item[1]); 
+        }
 
         fm_wppath(fm->y-1, 0, fm->pp[fl_p]->path);
+        fm->fl_reload = 0;
     }
-
-    update_panels();
-    doupdate();
-}
-
-void fm_reload_win(struct fm *fm)
-{
-    int y2, x2;
-    int fl_p = fm->fl_p;
-
-    getmaxyx(stdscr, y2, x2);
-    
-    fm->y = y2;
-    fm->x = x2;
-    
-    dest_panel(fm->p_l.panel);
-    dest_panel(fm->p_r.panel);
-    
-    free_list(fm->p_l.list);
-    free_list(fm->p_r.list);
-    
-    fm->p_l.list = load_list(fm->p_l.path);
-    fm->p_r.list = load_list(fm->p_r.path);
-    
-    fm->p_l.panel = init_panel(fm->p_l.list, 2, 0);
-    fm->p_r.panel = init_panel(fm->p_r.list, 2, fm->x/2);
-    
-    refresh();
-    keypad(fm->pp[fl_p]->panel->m_win, TRUE);
-    
-    fm_wppath(fm->y-1, 0, fm->pp[fl_p]->path);
 
     update_panels();
     doupdate();
@@ -158,7 +131,7 @@ int32_t fm_keyswitch(struct fm *fm)
                     }
                     break;
                 case KEY_F(5):
-                    fm_reload_win(fm);
+                    fm->fl_reload = 1;
                     break;
                 case KEY_F(10):
                 case ERR:
@@ -210,7 +183,6 @@ int fm_proc_event(struct fm *fm)
         return 0;
     }  
  
-    /*
     while ( i < length ) {
         struct inotify_event *event = ( struct inotify_event * ) &buffer[i];
         if ( event->len ) {
@@ -220,8 +192,6 @@ int fm_proc_event(struct fm *fm)
         }
         i += INOTIFY_EVENT_SIZE + event->len;
     }
-*/
-    fm_reload_win(fm);
-    fl = 1;
+
     return length;
 }

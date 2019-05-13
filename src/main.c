@@ -50,7 +50,7 @@ int main()
         }
         
 
-        fm_resize_win(&fm);
+        fm_reload_win(&fm);
     }
 
 

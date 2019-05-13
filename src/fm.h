@@ -20,6 +20,7 @@ struct fm {
     struct fm_pv *pp[2] ;
     PANEL *top_p;
     int fl_p;
+    int fl_reload;
     int y, x;
     int get_item[2];
     int inotify_fd;
@@ -30,8 +31,7 @@ struct fm {
 
 void fm_create(struct fm *);
 void fm_destroy(struct fm *);
-void fm_resize_win(struct fm *);
-void fm_reload_win(struct fm *fm);
+void fm_reload_win(struct fm *);
 int32_t fm_keyswitch(struct fm *);
 void fm_wppath(int, int, char *);
 int fm_proc_event(struct fm *);
