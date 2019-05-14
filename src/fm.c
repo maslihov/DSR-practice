@@ -87,7 +87,7 @@ int32_t fm_keyswitch(struct fm *fm)
                 fl_p = fl_p ? 0 : 1;
                 fm->fl_p = fl_p;
                 keypad(fmp->panel->m_win, TRUE);
-                fm_wppath(fm->y-1, 0, fmp->path);
+                fm_wppath(fm->y-1, 0, fm->pp[fl_p]->path);
                 break;
             case KEY_DOWN:
                 menu_driver(fmp->panel->menu, REQ_DOWN_ITEM);
