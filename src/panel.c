@@ -1,3 +1,4 @@
+#include "fm_global.h"
 #include "panel.h"
 
 fm_panel *init_panel(dir_list *list, int sy, int sx)

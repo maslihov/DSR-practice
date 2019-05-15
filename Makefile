@@ -1,6 +1,6 @@
 CC = gcc
 CFLAG = -Wall -g 
-LIBS = -lmenu -lpanel -lncurses
+LIBS =  -lform -lmenu -lpanel -lncurses
 #LIBS = -lmenuw -lpanelw -lncursesw
 SRC = ./src/
 EXE = fm
@@ -22,9 +22,12 @@ dirc.o: $(SRC)dirc.c $(SRC)dirc.h
 	$(CC) $(CFLAG) $(LIBS) -c -o $@ $< 
 	
 humanize.o: $(SRC)humanize.c $(SRC)humanize.h
-	$(CC) $(CFLAG) $(LIBS) -c -o $@ $< 
+	$(CC) $(CFLAG) $(LIBS) -c -o $@ $<
 
-$(EXE):main.o fm.o panel.o dirc.o humanize.o
+create.o: $(SRC)create.c $(SRC)create.h
+	$(CC) $(CFLAG)  $(LIBS) -c -o $@ $<
+
+$(EXE):main.o fm.o panel.o dirc.o humanize.o create.o
 	$(CC) $(CFLAG) $(LIBS) -o $@ $^
 	ls -lh $@
 

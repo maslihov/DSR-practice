@@ -1,3 +1,4 @@
+#include "fm_global.h"
 #include "main.h"
 
 int main()
@@ -70,5 +71,7 @@ int main()
 
 void usage(void)
 {
-    mvprintw(0,0,"[F5 - Reloade] [F10 - EXIT]");
+    mvprintw(0,0,"[F5 - Reloade | F7  - Create dir | "
+        "F10 - EXIT]"
+    );
 }

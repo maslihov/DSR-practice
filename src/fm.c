@@ -1,4 +1,7 @@
+#include "fm_global.h"
 #include "fm.h"
+#include "create.h"
+
 
 void fm_create(struct fm *fm)
 {
@@ -39,19 +42,19 @@ void fm_reload_win(struct fm *fm)
         fm->y = y2;
         fm->x = x2;
         
-        dest_panel(fm->p_l.panel);
-        dest_panel(fm->p_r.panel);
-        
         if(fm->fl_reload){
              reload_list(fm->p_l.list, fm->p_l.path);
              reload_list(fm->p_r.list, fm->p_r.path);
         }
 
+        dest_panel(fm->p_l.panel);
+        dest_panel(fm->p_r.panel);
+
         fm->p_l.panel = init_panel(fm->p_l.list, 2, 0);
         fm->p_r.panel = init_panel(fm->p_r.list, 2, fm->x/2);
         
-        refresh();
-        keypad(fm->pp[fl_p]->panel->m_win, TRUE);
+        
+        
         
         if(!fm->fl_reload){
             goto_item(fm->p_l.panel->menu, fm->get_item[0]);
@@ -62,9 +65,10 @@ void fm_reload_win(struct fm *fm)
         fm->fl_reload = 0;
     }
 
-
+    keypad(fm->pp[fl_p]->panel->m_win, TRUE);
     update_panels();
     doupdate();
+    refresh();
 EXIT:
     gettimeofday(&tv2, NULL);
 }
@@ -86,7 +90,7 @@ int32_t fm_keyswitch(struct fm *fm)
 
                 fl_p = fl_p ? 0 : 1;
                 fm->fl_p = fl_p;
-                keypad(fmp->panel->m_win, TRUE);
+                keypad(fm->pp[fl_p]->panel->m_win, TRUE);
                 fm_wppath(fm->y-1, 0, fm->pp[fl_p]->path);
                 break;
             case KEY_DOWN:
@@ -151,6 +155,10 @@ int32_t fm_keyswitch(struct fm *fm)
                     break;
                 case KEY_F(5):
                     fm->fl_reload = 1;
+                    break;
+                case KEY_F(7):
+                    (void)fm_cr_win(fm, CREATE_DIR);
+   
                     break;
                 case KEY_F(10):
                 case ERR:

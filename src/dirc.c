@@ -1,3 +1,4 @@
+#include "fm_global.h"
 #include "dirc.h"
 
 int sort_name(const void *pa, const void *pb)
