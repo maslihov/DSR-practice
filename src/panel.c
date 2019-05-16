@@ -85,6 +85,9 @@ void load_menu(fm_panel *panel, dir_list *list)
     
     set_menu_format(panel->menu, y-1, 1);
     
+	
+    menu_opts_off(panel->menu, O_ONEVALUE);
+    
     post_menu(panel->menu);
     wrefresh(panel->m_win);
     

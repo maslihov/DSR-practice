@@ -28,6 +28,7 @@ int main()
     nodelay(stdscr, TRUE);
     noecho();
     keypad(stdscr, TRUE);
+    curs_set(0);
     usage();
 
     fm_create(&fm);

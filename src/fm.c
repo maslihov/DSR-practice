@@ -24,6 +24,8 @@ void fm_create(struct fm *fm)
     
     fm->top_p = fm->p_r.panel->panel;
     fm->fl_p = 1;
+    
+    fm_led_panel(fm);
     keypad( fm->pp[fm->fl_p]->panel->m_win, TRUE);
 }
 
@@ -38,7 +40,7 @@ void fm_reload_win(struct fm *fm)
     if((tv2.tv_sec+1) > tv1.tv_sec) goto EXIT;
 
     getmaxyx(stdscr, y2, x2);
-    if((fm->y!=y2 || fm->x!=x2)|| fm->fl_reload){
+    if((fm->y!=y2 || fm->x!=x2) || fm->fl_reload){
         fm->y = y2;
         fm->x = x2;
         
@@ -65,6 +67,7 @@ void fm_reload_win(struct fm *fm)
         fm->fl_reload = 0;
     }
 
+    fm_led_panel(fm);
     keypad(fm->pp[fl_p]->panel->m_win, TRUE);
     update_panels();
     doupdate();
@@ -78,100 +81,149 @@ int32_t fm_keyswitch(struct fm *fm)
     int fl_p = fm->fl_p;
     struct fm_pv *fmp = fm->pp[fl_p];
 
-    int32_t c;
-    for(;;)
+    int32_t key;
+    static int press_key = 0;
+
+    key = wgetch(fmp->panel->m_win);
+    switch(key)
     {
-        c = wgetch(fmp->panel->m_win);
-        switch(c)
-        {
-            case '\t': 
-                fm->top_p = (PANEL *)panel_userptr(fm->top_p);
-                top_panel(fm->top_p);
-
-                fl_p = fl_p ? 0 : 1;
-                fm->fl_p = fl_p;
-                keypad(fm->pp[fl_p]->panel->m_win, TRUE);
-                fm_wppath(fm->y-1, 0, fm->pp[fl_p]->path);
-                break;
-            case KEY_DOWN:
-                menu_driver(fmp->panel->menu, REQ_DOWN_ITEM);
-                fm->get_item[fl_p] = item_index(\
-                    current_item(fmp->panel->menu));
-                break;
-            case KEY_UP:
-                menu_driver(fmp->panel->menu, REQ_UP_ITEM);
-                fm->get_item[fl_p] = item_index(\
-                    current_item(fmp->panel->menu));
-                break;
-            case KEY_NPAGE:
-				menu_driver(fmp->panel->menu, REQ_SCR_DPAGE);
-                fm->get_item[fl_p] = item_index(\
-                    current_item(fmp->panel->menu));
-				break;
-			case KEY_PPAGE:
-				menu_driver(fmp->panel->menu, REQ_SCR_UPAGE);
-                fm->get_item[fl_p] = item_index(\
-                    current_item(fmp->panel->menu));
-				break;
-            case KEY_HOME:
-				menu_driver(fmp->panel->menu, REQ_FIRST_ITEM);
-                fm->get_item[fl_p] = item_index(\
-                    current_item(fmp->panel->menu));
-				break;
-             case KEY_END:
-				menu_driver(fmp->panel->menu, REQ_LAST_ITEM);
-                fm->get_item[fl_p] = item_index(\
-                    current_item(fmp->panel->menu));
-				break;
-            case 10: // enter   
-                menu_driver(fmp->panel->menu, REQ_TOGGLE_ITEM);
-                
-                int it;
-                it = item_index(current_item(fmp->panel->menu));
-                
-                item_dir_list *fentry = &fmp->list->list[it];
-                char p_buff[PATH_MAX];
-                
-                if(fentry->fl_dir > 0){
-                    sprintf(p_buff, "%s/%s", fmp->path, fentry->name);
-                    free(fmp->path);
-                    
-                    fmp->path = realpath(p_buff, NULL);
-                    
-                    free_list(fmp->list);
-                    fmp->list = load_list(fmp->path);
-                    
-                    reload_panel(fmp->panel, fmp->list);
-                    
-                    fm_wppath(fm->y-1, 0, fmp->path);
-                   
-                    }
-                    if(fm->p_r.inotify_wd != fm->p_l.inotify_wd){
-                        inotify_rm_watch(fm->inotify_fd, fm->pp[fl_p]->inotify_wd);
-                    }
-                    fm->pp[fl_p]->inotify_wd = inotify_add_watch( fm->inotify_fd,\
-                         fm->pp[fl_p]->path, IN_MODIFY | IN_CREATE | IN_DELETE );
-
-                    break;
-                case KEY_F(5):
-                    fm->fl_reload = 1;
-                    break;
-                case KEY_F(7):
-                    (void)fm_cr_win(fm, CREATE_DIR);
-   
-                    break;
-                case KEY_F(10):
-                case ERR:
-                    goto EXIT;
-        }
+        case '\t': 
+            fm_switch_panel(fm);
+            break;
+        case KEY_DOWN:
+            menu_driver(fmp->panel->menu, REQ_DOWN_ITEM);
+            (void)fm_item_index(fm);
+            fm_select_item(fm, press_key);
+            break;
+        case KEY_UP:
+            menu_driver(fmp->panel->menu, REQ_UP_ITEM);
+            (void)fm_item_index(fm);
+            fm_select_item(fm, press_key);
+            break;
+        case KEY_NPAGE:
+            menu_driver(fmp->panel->menu, REQ_SCR_DPAGE);
+            (void)fm_item_index(fm);
+            break;
+        case KEY_PPAGE:
+            menu_driver(fmp->panel->menu, REQ_SCR_UPAGE);
+            (void)fm_item_index(fm);
+            break;
+        case KEY_HOME:
+            menu_driver(fmp->panel->menu, REQ_FIRST_ITEM);
+            (void)fm_item_index(fm);
+            break;
+        case KEY_END:
+            menu_driver(fmp->panel->menu, REQ_LAST_ITEM);
+            (void)fm_item_index(fm);
+            break;
+        case ' ':
+            press_key = press_key != 1 ? 1 : 0;
+            fm_select_item(fm, press_key);    
+            break;
+        
+        case 10: // enter
+            (void)fm_open_dir(fm);
+            break;
+        case 27: // Esc
+        case KEY_F(5):
+            fm->fl_reload = 1;
+            break;
+        case KEY_F(7):
+            (void)fm_cr_win(fm, CREATE_DIR);
+            break;
+        case KEY_F(10):
+        case ERR:
+            break;
     }
 
-EXIT:
+    
     update_panels();
     doupdate();
     refresh();
 
-    return c;
+    return key;
+}
+
+int fm_open_dir(struct fm *fm)
+{
+    int fl_p = fm->fl_p;
+    struct fm_pv *fmp = fm->pp[fl_p];
+    
+    int it;
+    it = fm_item_index(fm);
+    
+    item_dir_list *fentry = &fmp->list->list[it];
+    char p_buff[PATH_MAX];
+    
+    if(fentry->fl_dir > 0){
+        sprintf(p_buff, "%s/%s", fmp->path, fentry->name);
+        free(fmp->path);
+        
+        fmp->path = realpath(p_buff, NULL);
+        
+        free_list(fmp->list);
+        fmp->list = load_list(fmp->path);
+        
+        reload_panel(fmp->panel, fmp->list);
+        
+        fm_wppath(fm->y-1, 0, fmp->path);
+       
+        }
+        
+        if(fm->p_r.inotify_wd != fm->p_l.inotify_wd){
+            inotify_rm_watch(fm->inotify_fd, fm->pp[fl_p]->inotify_wd);
+        }
+        fm->pp[fl_p]->inotify_wd = inotify_add_watch( fm->inotify_fd,\
+             fm->pp[fl_p]->path, IN_MODIFY | IN_CREATE | IN_DELETE );
+    return it;
+}
+
+void fm_switch_panel(struct fm *fm)
+{
+    int fl_p = fm->fl_p;
+    //struct fm_pv *fmp = fm->pp[fl_p];
+    
+    fm->top_p = (PANEL *)panel_userptr(fm->top_p);
+    top_panel(fm->top_p);
+    
+    
+
+    fl_p = fl_p ? 0 : 1;
+    fm->fl_p = fl_p;
+    
+    fm_led_panel(fm);
+    keypad(fm->pp[fl_p]->panel->m_win, TRUE);
+    fm_wppath(fm->y-1, 0, fm->pp[fl_p]->path);
+}
+
+void fm_led_panel(struct fm *fm)
+{
+    int fl_p = fm->fl_p;
+    int x = getmaxx(fm->pp[!fl_p]->panel->win);
+    mvwprintw(fm->pp[!fl_p]->panel->win, 0, x-6, "[ ]");
+    mvwprintw(fm->pp[fl_p]->panel->win, 0, x-6, "[*]");
+}
+
+int fm_item_index(struct fm *fm)
+{
+    int it, fl_p = fm->fl_p;
+    struct fm_pv *fmp = fm->pp[fl_p];
+    
+    it = item_index(current_item(fmp->panel->menu));
+    fm->get_item[fl_p] = it;
+    return it;
+}
+
+void fm_select_item(struct fm *fm, int press_key)
+{
+    int it, fl_p = fm->fl_p;
+    struct fm_pv *fmp = fm->pp[fl_p];
+    
+    it = fm->get_item[fl_p];
+    item_dir_list *fentry = &fmp->list->list[it];
+    
+    if(!fentry->fl_dotdot_dir && press_key)
+        menu_driver(fmp->panel->menu, REQ_TOGGLE_ITEM);
 }
 
 void fm_destroy(struct fm *fm)

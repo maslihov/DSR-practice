@@ -6,7 +6,7 @@ int fm_cr_win(struct fm *fm, int mod)
     WINDOW *back_win, *top_win;
     FIELD *field[2];
 	FORM  *my_form;
-    char path_file[NAME_MAX];
+    char path_file[PATH_MAX];
     
     int x, y, err;
     getmaxyx(stdscr, y, x);
@@ -31,7 +31,12 @@ int fm_cr_win(struct fm *fm, int mod)
 	
     keypad(top_win, TRUE);
     box(top_win, 0, 0);
-    mvwprintw(top_win, 0, 3, "[ Create  new ]");
+    
+    if(mod)
+        mvwprintw(top_win, 0, 3, "[ Create new dir ]");
+    else
+        mvwprintw(top_win, 0, 3, "[ Create new file ]");
+        
     mvwprintw(top_win, y/2, 1, "Name:");
     mvwprintw(top_win, y-1, x-strlen(USAGE)-3, USAGE);
     refresh();
@@ -62,7 +67,7 @@ LOOP:
         case 10:
             form_driver (my_form, REQ_VALIDATION) ;
 
-            snprintf(path_file, NAME_MAX, "%s/%s", fm->pp[fm->fl_p]->path ,\
+            snprintf(path_file, PATH_MAX, "%s/%s", fm->pp[fm->fl_p]->path ,\
                  trim_whitespaces(field_buffer(field[0], 0)));
 
             goto JOB;
