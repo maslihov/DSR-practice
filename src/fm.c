@@ -1,6 +1,7 @@
 #include "fm_global.h"
 #include "fm.h"
 #include "create.h"
+#include "delete.h"
 
 
 void fm_create(struct fm *fm)
@@ -54,10 +55,7 @@ void fm_reload_win(struct fm *fm)
 
         fm->p_l.panel = init_panel(fm->p_l.list, 2, 0);
         fm->p_r.panel = init_panel(fm->p_r.list, 2, fm->x/2);
-        
-        
-        
-        
+
         if(!fm->fl_reload){
             goto_item(fm->p_l.panel->menu, fm->get_item[0]);
             goto_item(fm->p_r.panel->menu, fm->get_item[1]); 
@@ -130,6 +128,9 @@ int32_t fm_keyswitch(struct fm *fm)
             break;
         case KEY_F(7):
             (void)fm_cr_win(fm, CREATE_DIR);
+            break;
+         case KEY_F(8):
+            (void)fm_del_win(fm);
             break;
         case KEY_F(10):
         case ERR:
@@ -222,8 +223,10 @@ void fm_select_item(struct fm *fm, int press_key)
     it = fm->get_item[fl_p];
     item_dir_list *fentry = &fmp->list->list[it];
     
-    if(!fentry->fl_dotdot_dir && press_key)
+    if(!fentry->fl_dotdot_dir && press_key){
         menu_driver(fmp->panel->menu, REQ_TOGGLE_ITEM);
+        fmp->panel->c_select_items++;
+    }
 }
 
 void fm_destroy(struct fm *fm)

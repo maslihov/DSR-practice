@@ -20,7 +20,6 @@ typedef struct {
     struct stat st;
     int fl_dir;
     int fl_dotdot_dir;
-    
 } item_dir_list;
 
 typedef struct {
@@ -36,6 +35,7 @@ typedef struct {
     MENU *menu;
     ITEM **items;
     int c_items;
+    int c_select_items;
     char **i_name;
 } fm_panel;
 
@@ -44,6 +44,7 @@ struct fm_pv {
     dir_list *list;
     char *path;
     int inotify_wd;
+
 };
 
 struct fm {

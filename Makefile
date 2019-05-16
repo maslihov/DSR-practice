@@ -27,7 +27,13 @@ humanize.o: $(SRC)humanize.c $(SRC)humanize.h
 create.o: $(SRC)create.c $(SRC)create.h
 	$(CC) $(CFLAG)  $(LIBS) -c -o $@ $<
 
-$(EXE):main.o fm.o panel.o dirc.o humanize.o create.o
+delete.o:  $(SRC)delete.c  $(SRC)delete.h
+	$(CC) $(CFLAG)  $(LIBS) -c -o $@ $<
+
+rm.o: $(SRC)rm.c $(SRC)rm.h
+	$(CC) $(CFLAG)  $(LIBS) -c -o $@ $<
+
+$(EXE):main.o fm.o panel.o dirc.o humanize.o create.o delete.o rm.o
 	$(CC) $(CFLAG) $(LIBS) -o $@ $^
 	ls -lh $@
 

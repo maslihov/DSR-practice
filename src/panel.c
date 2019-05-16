@@ -8,7 +8,8 @@ fm_panel *init_panel(dir_list *list, int sy, int sx)
 
     int y, x, c_items;
     panel->c_items = c_items = list->len;
-    
+    panel->c_select_items = 0;
+
     getmaxyx(stdscr, y, x);
     panel->win = newwin(y-3, x/2, sy, sx);
     
