@@ -72,7 +72,10 @@ dir_list *load_list(char *path)
             fentry->namelen = strlen(edp->d_name);
             fentry->name = strndup(edp->d_name, fentry->namelen);
             
-            stat(f_path, &st);
+            if(stat(f_path, &st)<0){
+                fm_warn("%s: %s", path,\
+						strerror(errno));
+            }
             fentry->st = st;
             
             fentry->fl_dir = (edp->d_type == DT_DIR) ? 1 : -1;

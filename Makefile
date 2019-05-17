@@ -30,10 +30,13 @@ create.o: $(SRC)create.c $(SRC)create.h
 delete.o:  $(SRC)delete.c  $(SRC)delete.h
 	$(CC) $(CFLAG)  $(LIBS) -c -o $@ $<
 
+rename.o:  $(SRC)rename.c  $(SRC)rename.h
+	$(CC) $(CFLAG)  $(LIBS) -c -o $@ $<
+
 fm_err.o:  $(SRC)fm_err.c  $(SRC)fm_err.h
 	$(CC) $(CFLAG)  $(LIBS) -c -o $@ $<
 
-$(EXE):main.o fm.o panel.o dirc.o humanize.o create.o delete.o fm_err.o
+$(EXE):main.o fm.o panel.o dirc.o humanize.o create.o delete.o rename.o fm_err.o
 	$(CC) $(CFLAG) $(LIBS) -o $@ $^
 	ls -lh $@
 

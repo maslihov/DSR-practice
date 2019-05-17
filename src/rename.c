@@ -1,15 +1,23 @@
 #include "fm_global.h"
+#include "rename.h"
 #include "create.h"
 #include "fm_err.h"
 
-int fm_cr_win(struct fm *fm, int mod)
+
+int fm_rename_win(struct fm *fm)
 {
     WINDOW *back_win, *top_win;
     FIELD *field[2];
 	FORM  *my_form;
     char path_file[PATH_MAX];
-    
-    int x, y, err;
+    int fl_p = fm->fl_p;
+    struct fm_pv *in = fm->pp[fl_p];
+    struct fm_pv *out = fm->pp[!fl_p];
+    int it = fm->get_item[fl_p];
+    char *i_name;
+    i_name = in->list->list[it].name;
+    int x, y, err, mod;
+    mod = 0;
     getmaxyx(stdscr, y, x);
     back_win = newwin(SIZE_Y, SIZE_X, (y/2)-(SIZE_Y/2),\
         (x/2)-(SIZE_X/2));
@@ -22,7 +30,7 @@ int fm_cr_win(struct fm *fm, int mod)
     field[0] = new_field(1, x-7, y/2, 6, 0, 0);
     field[1] = NULL;
     set_field_back(field[0], A_UNDERLINE);
-    set_field_buffer(field[0], 0, "new"); 
+    set_field_buffer(field[0], 0, i_name); 
 
     my_form = new_form(field);
     set_form_sub(my_form, top_win);
@@ -33,10 +41,13 @@ int fm_cr_win(struct fm *fm, int mod)
     keypad(top_win, TRUE);
     box(top_win, 0, 0);
     
+    if(strcmp(in->path, out->path) == 0)
+        mod = 1;
+
     if(mod)
-        mvwprintw(top_win, 0, 3, "[ Create new dir ]");
+        mvwprintw(top_win, 0, 3, "[ Rename ]");
     else
-        mvwprintw(top_win, 0, 3, "[ Create new file ]");
+        mvwprintw(top_win, 0, 3, "[ Move file ]");
         
     mvwprintw(top_win, y/2, 1, "Name:");
     mvwprintw(top_win, y-1, x-strlen(USAGE)-3, USAGE);
@@ -84,11 +95,11 @@ LOOP:
 JOB:
     switch(mod)
     {
-        case CREATE_FILE:
-            err = fm_cr_file(path_file);
+        case 0:
+            err = 0;
             break;
-        case CREATE_DIR:
-            err = fm_cr_dir(path_file);
+        case 1:
+            err = 0;
             break;
     }
 
@@ -107,46 +118,4 @@ EXIT:
     delwin(back_win);
     
     return 0;
-}
-
-char* trim_whitespaces(char *str)
-{
-	char *end;
-	while(isspace(*str))
-		str++;
-
-	if(*str == 0) 
-		return str;
-
-	end = str + strnlen(str, 128) - 1;
-
-	while(end > str && isspace(*end))
-		end--;
-
-	*(end+1) = '\0';
-	return str;
-}
-
-int fm_cr_file(char *file)
-{
-    extern int errno;
-    int fd;
-
-    fd = open(file, O_CREAT | O_WRONLY);
-    if(fd != -1){
-        close(fd);
-        return 0;
-    }
-    return errno;
-}
-
-int fm_cr_dir(char *dir)
-{
-    extern int errno;
-    int fd;
-    fd = mkdir(dir, 0777);
-    if(fd != -1){
-        return 0;
-    }
-    return errno;
 }

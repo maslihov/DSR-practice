@@ -2,7 +2,7 @@
 #include "fm.h"
 #include "create.h"
 #include "delete.h"
-
+#include "rename.h"
 
 void fm_create(struct fm *fm)
 {
@@ -67,6 +67,7 @@ void fm_reload_win(struct fm *fm)
 
     fm_led_panel(fm);
     keypad(fm->pp[fl_p]->panel->m_win, TRUE);
+    curs_set(0);
     update_panels();
     doupdate();
     refresh();
@@ -126,8 +127,10 @@ int32_t fm_keyswitch(struct fm *fm)
             (void)fm_open_dir(fm);
             break;
         case 27: // Esc
-        case KEY_F(5):
             fm->fl_reload = 1;
+            break;
+        case KEY_F(5):
+            (void)fm_rename_win(fm);
             break;
         case KEY_F(7):
             (void)fm_cr_win(fm, CREATE_DIR);

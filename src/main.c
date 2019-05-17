@@ -41,22 +41,16 @@ int main()
     keep_running = 1;
     while(keep_running){
         event_count = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
-         
         for(i = 0; i < event_count; i++){
-            
             if(events[i].data.fd == STDIN_FILENO){
                 c = fm_keyswitch(&fm);
                 if(c == KEY_F(10))
                     keep_running = 0;
-               
             }
             if(events[i].data.fd == fm.inotify_fd){
                 fm_proc_event(&fm);
             }
-           
         }
-        
-
         fm_reload_win(&fm);
     }
 
@@ -72,7 +66,10 @@ int main()
 
 void usage(void)
 {
-    mvprintw(0,0,"[F5 - Reloade | F7  - Create dir | "
-        "F10 - EXIT]"
+    mvprintw(0,0,"[ESC - Reloade "
+        "| F5 - Rename/mv "
+        "| F7 - Create dir "
+        "| F8 - Delete "
+        "| F10 - EXIT]"
     );
 }
