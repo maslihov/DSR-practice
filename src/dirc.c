@@ -1,5 +1,6 @@
 #include "fm_global.h"
 #include "dirc.h"
+#include "fm_err.h"
 
 int sort_name(const void *pa, const void *pb)
 {
@@ -80,6 +81,10 @@ dir_list *load_list(char *path)
             list->len++;
         }
         closedir(dp);
+    }
+    else {
+        fm_warn("%s: %s", path,\
+						strerror(errno));
     }
     
     sort_list(list, sort_name);

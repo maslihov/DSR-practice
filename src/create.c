@@ -1,5 +1,6 @@
 #include "fm_global.h"
 #include "create.h"
+#include "fm_err.h"
 
 int fm_cr_win(struct fm *fm, int mod)
 {
@@ -90,7 +91,8 @@ JOB:
     }
 
     if(err != 0){
-        mvwprintw(top_win, y-2, 3, "err: %d", err);
+        fm_warn("%s: %s", path_file,\
+						strerror(err));
         goto LOOP;
     }
 

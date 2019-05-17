@@ -1,4 +1,3 @@
-/* include */
 #include <ncurses.h>
 #include <panel.h>
 #include <menu.h>
@@ -11,6 +10,7 @@
 #include <sys/stat.h>
 
 #include <limits.h>
+#include <unistd.h>
 
 /* fm type */
 

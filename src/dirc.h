@@ -1,4 +1,6 @@
 #include <dirent.h>
+#include <err.h>
+#include <errno.h>
 
 
 #define SIZE_STEP_LIST 125

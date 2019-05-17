@@ -1,6 +1,6 @@
 #include "fm_global.h"
-#include "rm.h"
 #include "delete.h"
+#include "fm_err.h"
 
 
 int fm_del_win(struct fm *fm)
@@ -59,14 +59,15 @@ EXIT:
 int fm_delete(struct fm *fm)
 {
     char **argv, mod;
-    int i, it, it_count, fl_p = fm->fl_p;
+    int fl_p = fm->fl_p;
+    int i, it, it_count;
     struct fm_pv *fmp = fm->pp[fl_p];
     item_dir_list *fentry;
     it = fm->get_item[fl_p];
     it_count = fmp->panel->c_select_items;
     if(!it_count){
         it_count = 1;
-        mod = OFF_RECURSIVE_DEL;
+        mod = 0;
     }
 
     it_count++;
@@ -82,14 +83,69 @@ int fm_delete(struct fm *fm)
         fentry= &fmp->list->list[it];
         argv[0] = malloc(sizeof(char) * PATH_MAX);
         snprintf(argv[0],PATH_MAX, "%s/%s" , fmp->path, fentry->name);
-       argv[1] = (char *)NULL;
+        argv[1] = NULL;
     }
     
-    (void)rm_main(1 , argv, 1);
+    rm_tree(argv);
     
     for(i = 0; argv[i] != NULL; i++)
         free(argv[i]);
      free(argv);
 
     return 0;
+}
+
+int rm_tree(char **argv)
+{
+	FTS *fts;
+	FTSENT *p;
+	int flags, rval;
+
+	flags = FTS_PHYSICAL | FTS_NOSTAT;
+
+	if ((fts = fts_open(argv, flags, NULL)) == NULL){
+        fm_err("fts_open failed");
+        return errno;
+    }
+		
+	while ((p = fts_read(fts)) != NULL) {
+	
+		switch (p->fts_info) {
+		case FTS_DNR:
+			if (p->fts_errno != ENOENT) {
+				fm_warn("%s: %s", p->fts_path,\
+						strerror(p->fts_errno));
+			}
+			continue;
+		case FTS_ERR:
+			fm_errx("%s: %s", p->fts_path,\
+					strerror(p->fts_errno));
+            return errno;
+			break;
+		}
+
+		rval = 0;
+
+		switch (p->fts_info) {
+		case FTS_DP:
+		case FTS_DNR:
+			rval = rmdir(p->fts_accpath);
+			if (rval != 0 && errno == ENOENT)
+				continue;
+		default:
+			
+			rval = unlink(p->fts_accpath);
+			if (rval != 0 && NONEXISTENT(errno))
+				continue;
+			break;
+		}
+		if (rval != 0 && 0) {
+			fm_warn("%s", p->fts_path);
+		}
+        fm_warn("%s", p->fts_accpath);
+	}
+	if (errno)
+		fm_err("fts_read");
+	fts_close(fts);
+    return errno;
 }

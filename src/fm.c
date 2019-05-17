@@ -58,10 +58,10 @@ void fm_reload_win(struct fm *fm)
 
         if(!fm->fl_reload){
             goto_item(fm->p_l.panel->menu, fm->get_item[0]);
-            goto_item(fm->p_r.panel->menu, fm->get_item[1]); 
+            goto_item(fm->p_r.panel->menu, fm->get_item[1]);
+            fm_wppath(fm->y-1, 0, fm->pp[fl_p]->path); 
         }
 
-        fm_wppath(fm->y-1, 0, fm->pp[fl_p]->path);
         fm->fl_reload = 0;
     }
 
@@ -85,6 +85,9 @@ int32_t fm_keyswitch(struct fm *fm)
     key = wgetch(fmp->panel->m_win);
     switch(key)
     {
+        case KEY_F(10):
+        case ERR:
+            break;
         case '\t': 
             fm_switch_panel(fm);
             break;
@@ -132,12 +135,9 @@ int32_t fm_keyswitch(struct fm *fm)
          case KEY_F(8):
             (void)fm_del_win(fm);
             break;
-        case KEY_F(10):
-        case ERR:
-            break;
     }
 
-    
+
     update_panels();
     doupdate();
     refresh();
