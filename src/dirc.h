@@ -1,5 +1,4 @@
 #include <dirent.h>
-#include <err.h>
 #include <errno.h>
 
 

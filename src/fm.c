@@ -3,6 +3,7 @@
 #include "create.h"
 #include "delete.h"
 #include "rename.h"
+#include "copy.h"
 
 void fm_create(struct fm *fm)
 {
@@ -128,8 +129,12 @@ int32_t fm_keyswitch(struct fm *fm)
             break;
         case 27: // Esc
             fm->fl_reload = 1;
+            press_key = 0;
             break;
         case KEY_F(5):
+            (void)fm_copy_win(fm);
+            break;
+        case KEY_F(6):
             (void)fm_rename_win(fm);
             break;
         case KEY_F(7):

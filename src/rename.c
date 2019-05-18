@@ -9,15 +9,18 @@ int fm_rename_win(struct fm *fm)
     WINDOW *back_win, *top_win;
     FIELD *field[2];
 	FORM  *my_form;
-    char path_file[PATH_MAX];
+    char path_out[PATH_MAX];
+    char path_in[PATH_MAX];
     int fl_p = fm->fl_p;
     struct fm_pv *in = fm->pp[fl_p];
     struct fm_pv *out = fm->pp[!fl_p];
     int it = fm->get_item[fl_p];
     char *i_name;
     i_name = in->list->list[it].name;
-    int x, y, err, mod;
-    mod = 0;
+    snprintf(path_in, PATH_MAX, "%s/%s", in->path ,\
+                 i_name);
+    int x, y;
+
     getmaxyx(stdscr, y, x);
     back_win = newwin(SIZE_Y, SIZE_X, (y/2)-(SIZE_Y/2),\
         (x/2)-(SIZE_X/2));
@@ -27,7 +30,7 @@ int fm_rename_win(struct fm *fm)
     
     getmaxyx(top_win, y, x);
     
-    field[0] = new_field(1, x-7, y/2, 6, 0, 0);
+    field[0] = new_field(1, x-7, y/2, 6, 1, 0);
     field[1] = NULL;
     set_field_back(field[0], A_UNDERLINE);
     set_field_buffer(field[0], 0, i_name); 
@@ -40,11 +43,8 @@ int fm_rename_win(struct fm *fm)
 	
     keypad(top_win, TRUE);
     box(top_win, 0, 0);
-    
-    if(strcmp(in->path, out->path) == 0)
-        mod = 1;
 
-    if(mod)
+    if(strcmp(in->path, out->path) == 0)
         mvwprintw(top_win, 0, 3, "[ Rename ]");
     else
         mvwprintw(top_win, 0, 3, "[ Move file ]");
@@ -76,12 +76,11 @@ LOOP:
             form_driver(my_form, REQ_NEXT_CHAR);
             break;
         case 27:
-            fm->fl_reload = 1;
             goto EXIT;
         case 10:
             form_driver (my_form, REQ_VALIDATION) ;
 
-            snprintf(path_file, PATH_MAX, "%s/%s", fm->pp[fm->fl_p]->path ,\
+            snprintf(path_out, PATH_MAX, "%s/%s", out->path ,\
                  trim_whitespaces(field_buffer(field[0], 0)));
 
             goto JOB;
@@ -93,19 +92,10 @@ LOOP:
     }
 
 JOB:
-    switch(mod)
-    {
-        case 0:
-            err = 0;
-            break;
-        case 1:
-            err = 0;
-            break;
-    }
 
-    if(err != 0){
-        fm_warn("%s: %s", path_file,\
-						strerror(err));
+    if(rename(path_in, path_out) != 0){
+        fm_warn("%s: %s", path_out,\
+						strerror(errno));
         goto LOOP;
     }
 
@@ -116,6 +106,7 @@ EXIT:
 
     delwin(top_win);
     delwin(back_win);
-    
+    fm->fl_reload = 1;
     return 0;
 }
+

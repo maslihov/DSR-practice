@@ -33,10 +33,19 @@ delete.o:  $(SRC)delete.c  $(SRC)delete.h
 rename.o:  $(SRC)rename.c  $(SRC)rename.h
 	$(CC) $(CFLAG)  $(LIBS) -c -o $@ $<
 
+copy.o:  $(SRC)copy.c  $(SRC)copy.h
+	$(CC) $(CFLAG)  $(LIBS) -c -o $@ $<
+
+cp.o: $(SRC)cp/cp.c $(SRC)cp/extern.h
+	gcc -Wall -g -c -o $@ $<
+
+utils.o: $(SRC)cp/utils.c $(SRC)cp/extern.h
+	gcc -Wall -g -c -o $@ $<
+
 fm_err.o:  $(SRC)fm_err.c  $(SRC)fm_err.h
 	$(CC) $(CFLAG)  $(LIBS) -c -o $@ $<
 
-$(EXE):main.o fm.o panel.o dirc.o humanize.o create.o delete.o rename.o fm_err.o
+$(EXE):main.o fm.o panel.o dirc.o humanize.o create.o delete.o rename.o fm_err.o copy.o cp.o utils.o 
 	$(CC) $(CFLAG) $(LIBS) -o $@ $^
 	ls -lh $@
 

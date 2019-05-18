@@ -19,7 +19,7 @@ int fm_cr_win(struct fm *fm, int mod)
     
     getmaxyx(top_win, y, x);
     
-    field[0] = new_field(1, x-7, y/2, 6, 0, 0);
+    field[0] = new_field(1, x-7, y/2, 6, 1, 0);
     field[1] = NULL;
     set_field_back(field[0], A_UNDERLINE);
     set_field_buffer(field[0], 0, "new"); 
@@ -72,7 +72,6 @@ LOOP:
 
             snprintf(path_file, PATH_MAX, "%s/%s", fm->pp[fm->fl_p]->path ,\
                  trim_whitespaces(field_buffer(field[0], 0)));
-
             goto JOB;
             break;
         default:

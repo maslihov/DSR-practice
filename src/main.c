@@ -14,7 +14,7 @@ int main()
     int epoll_fd = epoll_create1(0);
     
     event.events = EPOLLIN | EPOLLOUT;
-    event.data.fd = 0;
+    event.data.fd = STDIN_FILENO;
     epoll_ctl(epoll_fd, EPOLL_CTL_ADD, STDIN_FILENO, &event);
     
     event2.events = EPOLLIN | EPOLLOUT;
@@ -66,8 +66,10 @@ int main()
 
 void usage(void)
 {
-    mvprintw(0,0,"[ESC - Reloade "
-        "| F5 - Rename/mv "
+    mvprintw(0,0,
+        "[ESC - Reloade "
+        "| F5 - Copy "
+        "| F6 - Rename/mv "
         "| F7 - Create dir "
         "| F8 - Delete "
         "| F10 - EXIT]"
