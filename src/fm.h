@@ -19,3 +19,5 @@ void fm_select_item(struct fm *, int);
 void fm_wppath(int, int, char *);
 void fm_led_panel(struct fm *);
 int fm_proc_event(struct fm *);
+
+void usage(void);

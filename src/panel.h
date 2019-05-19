@@ -8,7 +8,7 @@
 #define TIME_STR_LEN 15
 
 fm_panel *init_panel(dir_list *, int, int);
-void load_menu(fm_panel *, dir_list *);
+int load_menu(fm_panel *, dir_list *);
 void reload_panel(fm_panel *, dir_list *);
 void clear_menu(fm_panel *);
 void dest_panel(fm_panel *);

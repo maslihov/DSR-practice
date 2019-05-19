@@ -1,5 +1,4 @@
 #include <fts.h>
-#include <err.h>
 #include <errno.h>
 
 #define SIZE_Y 10

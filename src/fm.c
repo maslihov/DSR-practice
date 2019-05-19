@@ -61,6 +61,7 @@ void fm_reload_win(struct fm *fm)
             goto_item(fm->p_l.panel->menu, fm->get_item[0]);
             goto_item(fm->p_r.panel->menu, fm->get_item[1]);
             fm_wppath(fm->y-1, 0, fm->pp[fl_p]->path); 
+            usage();
         }
 
         fm->fl_reload = 0;
@@ -276,4 +277,17 @@ int fm_proc_event(struct fm *fm)
             i += INOTIFY_EVENT_SIZE + event->len;
     }
     return length;
+}
+
+
+void usage(void)
+{
+    mvprintw(0,0,
+        "[ESC - Reloade "
+        "| F5 - Copy "
+        "| F6 - Rename/mv "
+        "| F7 - Create dir "
+        "| F8 - Delete "
+        "| F10 - EXIT]"
+    );
 }

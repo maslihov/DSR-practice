@@ -1,11 +1,15 @@
 #include "fm_global.h"
+#include "fm_err.h"
 #include "panel.h"
 
 fm_panel *init_panel(dir_list *list, int sy, int sx)
 {
     fm_panel *panel;
     panel = (fm_panel *)malloc(sizeof(fm_panel));
-
+    if(panel == NULL){
+        fm_err("ERROR malloc *panel");
+        return NULL;
+    }
     int y, x, c_items;
     panel->c_items = c_items = list->len;
     panel->c_select_items = 0;
@@ -26,10 +30,14 @@ fm_panel *init_panel(dir_list *list, int sy, int sx)
     return panel;
 }
 
-void load_menu(fm_panel *panel, dir_list *list)
+int load_menu(fm_panel *panel, dir_list *list)
 {
     panel->menu = (MENU *)malloc(sizeof(MENU *));
-    
+        if(panel->menu == NULL){
+        fm_err("ERROR malloc *panel->menu");
+        return -1;
+    }
+
     int i, y, x, c_items;
     getmaxyx(panel->m_win, y, x);
     
@@ -38,13 +46,24 @@ void load_menu(fm_panel *panel, dir_list *list)
     panel->c_items = c_items = list->len;
     
     panel->items = (ITEM **)calloc(c_items+1, sizeof(ITEM *));
+    if(panel->items == NULL){
+        fm_err("ERROR malloc *panel->items");
+        return -1;
+    }
     panel->i_name = (char **)calloc(c_items+1, sizeof(char *));
+        if(panel->i_name == NULL){
+        fm_err("ERROR malloc *panel->items");
+        return -1;
+    }
 
     for(i = 0; i < c_items; i++){
         item_dir_list *fentry = &list->list[i];
         char *i_name;
         
         panel->i_name[i] = (char *)malloc(ITEM_STR_LEN + x * sizeof(char));
+        if(panel == NULL){
+            fm_err("ERROR malloc *panel->i_name[i]");
+        }
         i_name = panel->i_name[i];
         
         char buf_size[HUMANVALSTR_LEN];
@@ -96,6 +115,7 @@ void load_menu(fm_panel *panel, dir_list *list)
     update_panels();
     doupdate();
     
+    return 0;
 }
 
 void reload_panel(fm_panel *panel, dir_list *list)
@@ -107,17 +127,23 @@ void reload_panel(fm_panel *panel, dir_list *list)
 
 void clear_menu(fm_panel *panel)
 {
-    unpost_menu(panel->menu);
     
-    free_menu(panel->menu);
     
-    int i;
-    for(i = 0; i < panel->c_items+1; i++){
-        free_item(panel->items[i]);
-        free(panel->i_name[i]);
+    if(panel->menu != NULL){
+        unpost_menu(panel->menu);
+        free_menu(panel->menu);
     }
-    free(panel->items);
-    free(panel->i_name);
+    
+    if(panel->items != NULL && panel->i_name != NULL){
+        int i;
+        for(i = 0; i < panel->c_items+1; i++){
+            free_item(panel->items[i]);
+            free(panel->i_name[i]);
+        }
+    
+        free(panel->items);
+        free(panel->i_name);
+    }
 
 }
 
@@ -126,19 +152,25 @@ void dest_panel(fm_panel *panel)
     keypad(stdscr, TRUE);
     
     clear_menu(panel);
+
+    if(panel->panel != NULL)
+        del_panel(panel->panel);
     
-    del_panel(panel->panel);
-    
-    delwin(panel->win);
-    delwin(panel->m_win);
-    free(panel);
+    if(panel->win != NULL)
+        delwin(panel->win);
+    if(panel->win != NULL)
+        delwin(panel->m_win);
+    if(panel != NULL)
+        free(panel);
 }
 
 void goto_item(MENU *menu, const int it)
 {
-    int i;
-    for(i = 0; i != it; i++)
-        menu_driver(menu, REQ_DOWN_ITEM);
+    if(menu != NULL){
+        int i;
+        for(i = 0; i != it; i++)
+            menu_driver(menu, REQ_DOWN_ITEM);
+    }
 }
 
 

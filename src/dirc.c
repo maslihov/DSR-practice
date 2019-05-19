@@ -33,7 +33,7 @@ void grow_list(dir_list *list, int dsize)
     
     nsize = list->size + dsize;
     
-    list->list = (item_dir_list *)realloc(list->list, nsize * sizeof(item_dir_list));;
+    list->list = (item_dir_list *)realloc(list->list, nsize * sizeof(item_dir_list));
     list->size = nsize;
 }
 
@@ -45,7 +45,10 @@ dir_list *load_list(char *path)
     struct stat st;
     
     list = (dir_list *)malloc(sizeof(dir_list));
-    
+    if(list == NULL){
+        fm_err("ERROR *list malloc");
+        return NULL;
+    }
     list->list = (item_dir_list *)malloc(SIZE_STEP_LIST * sizeof(item_dir_list));
     list->size = SIZE_STEP_LIST;
     
@@ -104,16 +107,17 @@ void reload_list(dir_list *list, char *path)
 
 void free_list(dir_list *list)
 {
-    int i;
-    for(i = 0; i < list->len; i++){
+    if(list != NULL && list->list != NULL){
+        int i;
         item_dir_list *fentry;
-        fentry = &list->list[i];
-        free(fentry->name);
-    }
-    free(list->list);
-    list->len = 0;
-    
+        for(i = 0; i < list->len; i++){
+            fentry = &list->list[i];
+            free(fentry->name);
+        }
+        free(list->list);
+        list->len = 0;
     free(list);
+    }
 }
 
 
