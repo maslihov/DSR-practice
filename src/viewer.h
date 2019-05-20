@@ -4,4 +4,4 @@
 #define READ_BUFF_SIZE 1024*1024
 
 int fm_viewer_win(struct fm *);
-static int get_digtt(int);
+int get_digtt(int);

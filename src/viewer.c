@@ -123,7 +123,7 @@ EXIT:
     return 0;
 }
 
-static int get_digtt(int n)
+int get_digtt(int n)
 {
     int i;
     for(i = 0; n > 0; i++)
