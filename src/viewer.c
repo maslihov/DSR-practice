@@ -4,14 +4,12 @@
 
 int fm_viewer_win(struct fm *fm)
 {
-    WINDOW *back_win, *top_win;
+    WINDOW *back_win;
     int fl_p = fm->fl_p;
     struct fm_pv *fmp = fm->pp[fl_p];
     int it = fm->get_item[fl_p];
     item_dir_list *fentry = &fmp->list->list[it];
     char file[PATH_MAX];
-    FIELD *field[2];
-    FORM  *my_form;
 
     if(fentry->fl_dir > 0){
         fm_warn("This is a directory");
@@ -23,96 +21,113 @@ int fm_viewer_win(struct fm *fm)
         return 0;
     }
 
-    snprintf(file, PATH_MAX, "%s/%s",\
+    snprintf(file, PATH_MAX, "%s/%s",
                     fmp->path, fentry->name);
-    
-    char buff[READ_BUFF_SIZE];
-    //buff = (char *)malloc(sizeof(char) * READ_BUFF_SIZE);
 
     FILE *fp = fopen(file, "r");
     if(fp == NULL){
-        fm_warn("%s: %s", fentry->name,\
+        fm_warn("%s: %s", fentry->name,
                         strerror(errno));
         return -1;
     }
 
-    int i = 0;
+    char *buff = (char *)malloc(READ_BUFF_SIZE * sizeof(char));
+
+    int i = 0, cn;
     char c;
-    size_t cn;
+    int rowcount = 0;
     while((c=fgetc(fp))!= -1){
+        if(i == READ_BUFF_SIZE){
+            int ns = i + READ_BUFF_SIZE;
+            buff = realloc(buff, ns *  sizeof(char));
+        }
+        if(c == '\n')
+            rowcount++;
         buff[i] = c;
-        if(c == '\0')
-            buff[i] = '\n';
         i++;
     }
-    buff[i++] = '\0';
-
-
-    
-
+    cn = i;
+    fclose(fp);
 
     int x, y;
     getmaxyx(stdscr, y, x);
-    back_win = newwin(y-1, x, 0, 0);
+    rowcount += y;
+    back_win = newpad(
+        rowcount,
+        x
+    );
 
-    getmaxyx(back_win, y, x);
-
-    top_win = derwin(back_win, y-2, x-1, 1, 1);
+    int nl = 1;
+    int di =  get_digtt(rowcount);
+    wprintw(back_win, " %.*d  ",di , nl);
+    for(i = 0; i != cn; i++){
+        pechochar(back_win, buff[i]);
+        if(buff[i] == '\n'){
+            nl++;
+            wprintw(back_win, " %.*d  ",di , nl);
+        }      
+    }
     
-    
-    scrollok(top_win, TRUE);
-    keypad(top_win, TRUE);
-    curs_set(1);
-    
-    box(top_win, 0, 0);
-    mvwprintw(top_win, 0, 3, "[ Open: file ]");
-    mvwprintw(top_win, y-3, x-strlen(USAGE)-3, USAGE);
+    scrollok( back_win, TRUE);
+    keypad( back_win, TRUE);
+    curs_set(0);
 
+    int mypadpos = 0;
+    prefresh(back_win, mypadpos , 0, 0, 0, y-1, x);
 
-    getmaxyx(top_win, y, x);
-    field[0] = new_field(y-2, x-1, 1, 1, 1, 0);
-    field[1] = NULL;
-
-    //mvwprintw(top_win, 0, 0, "%s", buff);
-    set_field_buffer(field[0], 0, buff);
-
-    my_form = new_form(field);
-    set_form_sub(my_form, top_win);
-	post_form(my_form);
-    field_opts_on(field[0], O_STATIC);
-    field_opts_off(field[0], O_AUTOSKIP);
-
-    form_driver(my_form, REQ_NEXT_WORD);
     int32_t key;
-    while((key = wgetch(top_win)) != 27){
-        switch(key)
+    while(1)
+    {
+        key = wgetch(back_win);
+        switch (key)
         {
-        case 0xD:
-            form_driver(my_form, REQ_VALIDATION);
+            case KEY_UP:
+                if (mypadpos >= 0)
+                    mypadpos--;
             break;
-        case KEY_LEFT:
-            form_driver(my_form, REQ_PREV_CHAR);
+            case KEY_DOWN:
+                if (mypadpos + y <= rowcount-y+1)
+                    mypadpos++;
+                break;
+            case KEY_PPAGE:
+                if (mypadpos - y >= 0)
+                    mypadpos -= y;
+                else 
+                    mypadpos = 0;
             break;
-        case KEY_RIGHT:
-            form_driver(my_form, REQ_NEXT_CHAR);
-            break;
-        case KEY_UP:
-            form_driver(my_form, REQ_PREV_LINE);
-            break;
-        case KEY_DOWN:
-            form_driver(my_form, REQ_NEXT_LINE);
-            break;
+            case KEY_NPAGE:
+                if (mypadpos + y <= rowcount-y)
+                    mypadpos += y;
+                else
+                    mypadpos = rowcount - y;
+                break;
+            case KEY_END:
+                mypadpos = rowcount - y;
+                break;
+             case KEY_HOME:
+                mypadpos = 0;
+                break;
+            case 'q':
+            case 'Q':
+            case 27:
+                goto EXIT;
         }
+        prefresh(back_win, mypadpos, 0, 0, 0, y-1, x);
     }
 
-    
-
-    unpost_form(my_form);
-	free_form(my_form);
-	free_field(field[0]);
-
-    delwin(top_win);
+EXIT:
     delwin(back_win);
+    free(buff);
+    clear();
     fm->fl_reload = 1;
     return 0;
+}
+
+static int get_digtt(int n)
+{
+    int i;
+    for(i = 0; n > 0; i++)
+        n /= 10;
+    
+    return i < 2 ? 2 : i;
 }

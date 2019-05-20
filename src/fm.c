@@ -63,9 +63,10 @@ void fm_reload_win(struct fm *fm)
             goto_item(fm->p_l.panel->menu, fm->get_item[0]);
             goto_item(fm->p_r.panel->menu, fm->get_item[1]);
             fm_wppath(fm->y-1, 0, fm->pp[fl_p]->path); 
-            usage();
+            
         }
 
+        usage();
         fm->fl_reload = 0;
     }
 
@@ -133,6 +134,9 @@ int32_t fm_keyswitch(struct fm *fm)
         case 27: // Esc
             fm->fl_reload = 1;
             press_key = 0;
+            break;
+        case KEY_F(2):
+            (void)fm_cr_win(fm, CREATE_FILE);
             break;
         case KEY_F(3):
             (void)fm_viewer_win(fm);
@@ -289,6 +293,8 @@ void usage(void)
 {
     mvprintw(0,0,
         "[ESC - Reloade "
+        "| F2 - Create file "
+        "| F3 - Viewer "
         "| F5 - Copy "
         "| F6 - Rename/mv "
         "| F7 - Create dir "

@@ -34,7 +34,7 @@ int main()
 
 
     initscr();
-    start_color();
+    //start_color();
     nodelay(stdscr, TRUE);
     noecho();
     keypad(stdscr, TRUE);
