@@ -56,7 +56,7 @@ LOOP:
             form_driver(my_form, REQ_DEL_CHAR);
             break;
         case KEY_BACKSPACE:
-             form_driver(my_form, REQ_DEL_PREV);
+            form_driver(my_form, REQ_DEL_PREV);
             break;
         case KEY_LEFT:
             form_driver(my_form, REQ_PREV_CHAR);

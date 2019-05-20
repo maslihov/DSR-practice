@@ -4,6 +4,7 @@
 #include "delete.h"
 #include "rename.h"
 #include "copy.h"
+#include "viewer.h"
 
 void fm_create(struct fm *fm)
 {
@@ -49,6 +50,7 @@ void fm_reload_win(struct fm *fm)
         if(fm->fl_reload){
              reload_list(fm->p_l.list, fm->p_l.path);
              reload_list(fm->p_r.list, fm->p_r.path);
+             fm->pp[fl_p]->panel->c_select_items = 0;
         }
 
         dest_panel(fm->p_l.panel);
@@ -131,6 +133,9 @@ int32_t fm_keyswitch(struct fm *fm)
         case 27: // Esc
             fm->fl_reload = 1;
             press_key = 0;
+            break;
+        case KEY_F(3):
+            (void)fm_viewer_win(fm);
             break;
         case KEY_F(5):
             (void)fm_copy_win(fm);
