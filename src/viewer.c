@@ -96,13 +96,13 @@ int fm_viewer_win(struct fm *fm)
                     mypadpos = 0;
             break;
             case KEY_NPAGE:
-                if (mypadpos + y <= rowcount-y)
+                if (mypadpos + y <= rowcount-(y*2))
                     mypadpos += y;
                 else
-                    mypadpos = rowcount - y;
+                    mypadpos = rowcount - (y*2-2);
                 break;
             case KEY_END:
-                mypadpos = rowcount - y;
+                mypadpos = rowcount - (y*2-2);
                 break;
              case KEY_HOME:
                 mypadpos = 0;

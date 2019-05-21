@@ -1,7 +1,7 @@
 CC = gcc
 CFLAG = -Wall -g 
 LIBS =  -lform -lmenu -lpanel -lncurses
-#LIBS = -lmenuw -lpanelw -lncursesw
+#LIBS = -lformw -lmenuw -lpanelw -lncursesw
 SRC = ./src/
 EXE = fm
 
